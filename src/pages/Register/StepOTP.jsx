@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
+import { reSend, verifyOtp } from "../../http/verify-otp";
 
 export default function StepOTP() {
   const navigate = useNavigate();
@@ -81,11 +82,8 @@ export default function StepOTP() {
     setError("");
 
     try {
-      const res = await fetch("/api/register/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otpString }),
-      });
+    
+    const res = await verifyOtp(email, otpString);
 
       const data = await res.json();
 
@@ -108,11 +106,7 @@ export default function StepOTP() {
   const resendOTP = async () => {
     setError("");
     try {
-      const res = await fetch("/api/register/resend-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await reSend(email)
 
       const data = await res.json();
 

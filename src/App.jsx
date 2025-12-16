@@ -6,6 +6,8 @@ import StepRegister from "./pages/Register/Register";
 import { Provider } from "react-redux";
 import store from "../store/store";
 import StepOTP from "./pages/Register/StepOTP";
+import NotesGrid from "./pages/notes/notesGrid";
+import NoteDetails from "./pages/notes/NoteDetails";
 
 function App() {
   return (
@@ -18,7 +20,8 @@ function App() {
 <Route path="/verify-otp" element={<StepOTP/>}/>
         {/* Protected Route */}
         <Route path="/" element={<Dashboard />} />
-
+<Route path="/notes/:course/:sem" element={<NotesGrid/>}/>
+<Route path="/note/:id" element={<NoteDetails />} />
       </Routes>
     </BrowserRouter>
         </Provider>

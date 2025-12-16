@@ -8,6 +8,7 @@ const ACADEMIC_PROGRAMS = [
   { label: "CSIT", courseName: "csit" },
   { label: "BIM", courseName: "bim" },
   { label: "BBM", courseName: "bbm" },
+   { label: "Software Engineerings", courseName: "Software Engineerings" },
 ];
 const SEMESTERS = Array.from({ length: 8 }, (_, i) => ({
   label: `${i + 1}${i === 0 ? "st" : i === 1 ? "nd" : i === 2 ? "rd" : "th"} Semester`,
@@ -97,7 +98,7 @@ export default function Navbar({ onLogout }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-blue-600 flex-shrink-0">
+          <Link to="/" className="text-xl font-bold text-blue-600 shrink-0">
             Entrance_Gateway
           </Link>
 
@@ -113,6 +114,7 @@ export default function Navbar({ onLogout }) {
             <CourseDropdown label="Syllabus" menu={academicMenu} icon={<FileText className="w-4 h-4" />} baseUrl="/syllabus" />
 
             {/* 4. Colleges */}
+            
             <NavLink to="/College" active={isActive("/College")}>Colleges</NavLink>
 
             {/* 5. Programs */}
@@ -156,7 +158,7 @@ export default function Navbar({ onLogout }) {
           {/* Mobile Toggle */}
           <div className="md:hidden flex items-center space-x-3">
             {user && !loadingUser && (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold ring-2 ring-blue-100">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold ring-2 ring-blue-100">
                 {getInitials(user.fullname)}
               </div>
             )}
