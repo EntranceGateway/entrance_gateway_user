@@ -5,6 +5,7 @@ import AdCard from "../components/common/Adcard/Adcard";
 import Card from "../components/common/Card";
 import AdsPanel from "../components/layout/AdsPanel";
 import DashboardLayout from "../components/layout/DashboardLayout";
+import CoursesSection from './notes/course/CoursesSection';
 
 const Dashboard = ({ showAds = false, show = true }) => {
   return (
@@ -117,6 +118,7 @@ const Dashboard = ({ showAds = false, show = true }) => {
                 </div>
               </div>
             </motion.section>
+            <CoursesSection/>
           </main>
 
           {showAds && (
