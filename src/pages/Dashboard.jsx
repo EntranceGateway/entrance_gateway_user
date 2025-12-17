@@ -6,6 +6,8 @@ import Card from "../components/common/Card";
 import AdsPanel from "../components/layout/AdsPanel";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import CoursesSection from './notes/course/CoursesSection';
+import MockTestHero from './MockTestHero/MockTestHero';
+import Colleges from './Colleges/Colleges';
 
 const Dashboard = ({ showAds = false, show = true }) => {
   return (
@@ -119,6 +121,8 @@ const Dashboard = ({ showAds = false, show = true }) => {
               </div>
             </motion.section>
             <CoursesSection/>
+            <MockTestHero />
+            <Colleges/>
           </main>
 
           {showAds && (
