@@ -8,6 +8,8 @@ import store from "../store/store";
 import StepOTP from "./pages/Register/StepOTP";
 import NotesGrid from "./pages/notes/notesGrid";
 import NoteDetails from "./pages/notes/NoteDetails";
+import CoursesPage from "./pages/notes/course/CoursesPage";
+import CourseDetails from "./pages/notes/course/CourseDetails";
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="/" element={<Dashboard />} />
 <Route path="/notes/:course/:sem" element={<NotesGrid/>}/>
 <Route path="/note/:id" element={<NoteDetails />} />
+<Route path="/courses" element={<CoursesPage />} />
+      <Route path="/courses/:id" element={<CourseDetails />} />
       </Routes>
     </BrowserRouter>
         </Provider>

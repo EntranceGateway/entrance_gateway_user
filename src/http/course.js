@@ -1,67 +1,41 @@
 import api from "./index";
 
 // --------------------------------------
-// Create Course
+// Create Course (ADMIN)
 // --------------------------------------
-export const createCourse = async (data, token) => {
-  try {
-    return await api.post("/api/v1/courses", data, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch (err) {
-    throw err.response?.data || { error: "Something went wrong." };
-  }
+export const createCourse = async (data) => {
+  const res = await api.post("/api/v1/courses", data);
+  return res.data;
 };
 
 // --------------------------------------
-// Get All Courses (with filters)
+// Get All Courses (PUBLIC)
 // --------------------------------------
-export const getCourses = async (params = {}, token) => {
-  try {
-    return await api.get("/api/v1/courses", {
-      params,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch (err) {
-    throw err.response?.data || { error: "Failed to fetch courses." };
-  }
+export const getCourses = async (params = {}) => {
+  const res = await api.get("/api/v1/courses", { params });
+  return res.data?.data?.content || [];
 };
 
 // --------------------------------------
-// Get Single Course
+// Get Single Course (PUBLIC)
 // --------------------------------------
-export const getSingleCourse = async (id, token) => {
-  try {
-    return await api.get(`/api/v1/courses/${id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch (err) {
-    throw err.response?.data || { error: "Failed to load course." };
-  }
+export const getSingleCourse = async (id) => {
+  const res = await api.get(`/api/v1/courses/${id}`);
+  return res.data?.data || null;
 };
 
 // --------------------------------------
-// Update Course
+// Update Course (ADMIN)
 // --------------------------------------
-export const updateCourse = async (id, data, token) => {
-  try {
-    return await api.put(`/api/v1/courses/${id}`, data, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch (err) {
-    throw err.response?.data || { error: "Failed to update course." };
-  }
+export const updateCourse = async (id, data) => {
+  const res = await api.put(`/api/v1/courses/${id}`, data);
+  return res.data;
 };
 
 // --------------------------------------
-// Delete Course
+// Delete Course (ADMIN)
 // --------------------------------------
-export const deleteCourse = async (id, token) => {
-  try {
-    return await api.delete(`/api/v1/courses/${id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  } catch (err) {
-    throw err.response?.data || { error: "Failed to delete course." };
-  }
+export const deleteCourse = async (id) => {
+  const res = await api.delete(`/api/v1/courses/${id}`);
+  return res.data;
 };

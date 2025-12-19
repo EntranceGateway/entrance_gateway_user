@@ -2,22 +2,39 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
-import { reSend, verifyOtp } from "../../http/verify-otp";
+import { verifyOtp, reSend } from "../../http/verify-otp";
+
+/* ---------- STRICT ERROR FILTER ---------- */
+const getUserErrorMessage = (error) => {
+  const allowedMessages = [
+    "Invalid OTP",
+    "OTP expired",
+    "Too many attempts",
+    "OTP already used",
+    "Email not found"
+  ];
+
+  const backendMessage = error?.response?.data?.message;
+
+  if (allowedMessages.includes(backendMessage)) {
+    return backendMessage;
+  }
+
+  return "Verification failed. Please try again.";
+};
 
 export default function StepOTP() {
   const navigate = useNavigate();
-
-  // Get email strictly — no fake fallback
   const email = localStorage.getItem("pendingEmail");
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [shake, setShake] = useState(false); // For error animation
+  const [shake, setShake] = useState(false);
 
   const inputsRef = useRef([]);
 
-  // Redirect if email is missing
+  /* ---------- GUARD ---------- */
   useEffect(() => {
     if (!email) {
       navigate("/signup");
@@ -26,15 +43,19 @@ export default function StepOTP() {
     inputsRef.current[0]?.focus();
   }, [email, navigate]);
 
+  /* ---------- HELPERS ---------- */
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+  };
+
   const handleChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
 
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-
-    // clear error on typing
-    if (error) setError(""); 
+    const next = [...otp];
+    next[index] = value.slice(-1);
+    setOtp(next);
+    setError("");
 
     if (value && index < 5) {
       inputsRef.current[index + 1]?.focus();
@@ -56,24 +77,20 @@ export default function StepOTP() {
 
     if (!pasted) return;
 
-    const newOtp = pasted.split("");
-    while (newOtp.length < 6) newOtp.push("");
+    const filled = pasted.split("");
+    while (filled.length < 6) filled.push("");
 
-    setOtp(newOtp);
+    setOtp(filled);
     setError("");
-    inputsRef.current[Math.min(pasted.length, 5)]?.focus();
+    inputsRef.current[pasted.length - 1]?.focus();
   };
 
-  const triggerShake = () => {
-    setShake(true);
-    setTimeout(() => setShake(false), 500);
-  };
-
+  /* ---------- VERIFY OTP ---------- */
   const verifyOTP = async () => {
     const otpString = otp.join("");
 
     if (otpString.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
+      setError("Enter the complete 6-digit code.");
       triggerShake();
       return;
     }
@@ -82,19 +99,18 @@ export default function StepOTP() {
     setError("");
 
     try {
-    
-    const res = await verifyOtp(email, otpString);
+      const res = await verifyOtp(email, otpString);
+      const data = res.data;
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Invalid OTP");
+      // ✅ BACKEND MATCH (this is the key fix)
+      if (!data || !data.data) {
+        throw { response: { data } };
       }
 
       localStorage.removeItem("pendingEmail");
       navigate("/");
     } catch (err) {
-      setError(err.message);
+      setError(getUserErrorMessage(err));
       triggerShake();
       setOtp(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
@@ -103,130 +119,106 @@ export default function StepOTP() {
     }
   };
 
+  /* ---------- RESEND OTP ---------- */
   const resendOTP = async () => {
     setError("");
+
     try {
-      const res = await reSend(email)
+      const res = await reSend(email);
+      const data = res.data;
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Resend failed");
+      if (!data || !data.message) {
+        throw { response: { data } };
       }
-      
-      // Ideally, show a success toast here instead of setting error text
-      alert("A new code has been sent to your email."); 
+
+      alert("A new OTP has been sent to your email.");
     } catch (err) {
-      setError(err.message);
+      setError(getUserErrorMessage(err));
     }
   };
 
+  /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50/50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full max-w-md"
+        className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8"
       >
-        <div className="bg-white rounded-3xl shadow-xl ring-1 ring-gray-900/5 px-8 py-12">
-          
-          {/* Header Section */}
-          <div className="flex flex-col items-center mb-10">
-            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-blue-100">
-              <ShieldCheck className="w-8 h-8 text-blue-600" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
-              Verification Code
-            </h2>
-            <p className="text-gray-500 text-center text-sm px-4">
-              Enter the 6-digit code sent to <br />
-              <span className="font-semibold text-gray-900">{email}</span>
-            </p>
+        <div className="text-center mb-8">
+          <div className="mx-auto mb-4 w-14 h-14 bg-blue-50 flex items-center justify-center rounded-xl">
+            <ShieldCheck className="w-7 h-7 text-blue-600" />
           </div>
-
-          {/* OTP Input Section */}
-          <motion.div
-            animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
-            transition={{ duration: 0.4 }}
-            className="flex justify-center gap-2 sm:gap-3 mb-8"
-            onPaste={handlePaste}
-          >
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => (inputsRef.current[i] = el)}
-                value={digit}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                onChange={(e) => handleChange(e.target.value, i)}
-                onKeyDown={(e) => handleKeyDown(e, i)}
-                className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-3xl font-mono font-medium rounded-xl border transition-all duration-200 outline-none select-none
-                  ${
-                    error
-                      ? "border-red-300 bg-red-50 text-red-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
-                      : "border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 caret-blue-600"
-                  } shadow-sm`}
-              />
-            ))}
-          </motion.div>
-
-          {/* Error Message with Animation */}
-          <div className="h-6 mb-6 flex justify-center">
-            <AnimatePresence mode="wait">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center gap-2 text-red-500 text-sm font-medium"
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-4">
-            <button
-              onClick={verifyOTP}
-              disabled={isLoading || otp.join("").length !== 6}
-              className={`w-full py-4 rounded-xl text-white font-semibold text-lg shadow-lg shadow-blue-500/20 transition-all duration-200
-                flex justify-center items-center gap-2
-                ${
-                  isLoading || otp.join("").length !== 6
-                    ? "bg-gray-300 cursor-not-allowed shadow-none"
-                    : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/30 hover:-translate-y-0.5 active:translate-y-0"
-                }`}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Verifying...
-                </>
-              ) : (
-                <>
-                  Verify Account <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-500">
-                Didn’t receive the code?{" "}
-                <button
-                  onClick={resendOTP}
-                  className="text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors"
-                >
-                  Click to resend
-                </button>
-              </p>
-            </div>
-          </div>
-          
+          <h2 className="text-2xl font-bold">Verification Code</h2>
+          <p className="text-sm text-gray-500 mt-2">{email}</p>
         </div>
+
+        <motion.div
+          animate={shake ? { x: [-8, 8, -8, 8, 0] } : {}}
+          className="flex justify-center gap-2 mb-6"
+          onPaste={handlePaste}
+        >
+          {otp.map((digit, i) => (
+            <input
+              key={i}
+              ref={(el) => (inputsRef.current[i] = el)}
+              value={digit}
+              maxLength={1}
+              inputMode="numeric"
+              onChange={(e) => handleChange(e.target.value, i)}
+              onKeyDown={(e) => handleKeyDown(e, i)}
+              className={`w-12 h-14 text-center text-2xl rounded-lg border
+                ${
+                  error
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+            />
+          ))}
+        </motion.div>
+
+        <div className="h-6 mb-4 flex justify-center">
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2 text-red-500 text-sm"
+              >
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <button
+          onClick={verifyOTP}
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 disabled:bg-gray-400"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Verifying…
+            </>
+          ) : (
+            <>
+              Verify <ArrowRight className="w-5 h-5" />
+            </>
+          )}
+        </button>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Didn’t receive the code?{" "}
+          <button
+            onClick={resendOTP}
+            className="text-blue-600 font-semibold"
+          >
+            Resend
+          </button>
+        </p>
       </motion.div>
     </div>
   );

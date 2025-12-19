@@ -1,8 +1,16 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://185.177.116.173:8080",
-  // Do NOT set Content-Type here globally
+  baseURL: "https://api.entrancegateway.com",
+});
+
+// Attach token automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;
