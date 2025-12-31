@@ -1,42 +1,125 @@
-import React from "react";
-import { BookOpen } from "lucide-react";
+import {
+  FileText,
+  GraduationCap,
+  ChevronRight,
+  Clock,
+  BookOpen,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function NoteCard({ note, index, onClick }) {
+export default function NoteCard({ note }) {
+  const navigate = useNavigate();
+
+  /* ---------------- FORMATTERS ---------------- */
+
+  const formatCourseName = (name) => {
+    if (!name) return "";
+    return name
+      .split("_")
+      .slice(1)
+      .join("_")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const formatNoteName = (name) => {
+    if (!name) return "";
+    return name
+      .split("_")
+      .slice(1)
+      .join("_")
+      .replace(/\.pdf$/i, "");
+  };
+
+  const noteTitle = formatNoteName(note.noteName);
+
+  /* ---------------- COMPONENT ---------------- */
+
   return (
     <div
-      onClick={onClick}
-      className="group bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+      onClick={() => navigate(`/note/${note.noteId}`)}
+      className="group relative cursor-pointer bg-white rounded-3xl
+                 border border-slate-200 hover:border-orange-200
+                 transition-all duration-500
+                 hover:shadow-[0_20px_50px_rgba(255,115,0,0.1)]
+                 flex flex-col h-full overflow-hidden"
     >
-      {/* Image Area */}
-      <div className="relative h-48 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
-        <img
-          src={`https://picsum.photos/seed/${note.subject + index}/400/250`}
-          alt={note.subject}
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute bottom-4 left-4 z-20">
-          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30 mb-2">
-            NOTE
+      {/* Decorative circle */}
+      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-orange-50
+                      rounded-full group-hover:bg-orange-100 transition opacity-50" />
+
+      <div className="p-6 relative flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-5">
+          <div className="p-3.5 bg-gradient-to-br from-orange-500 to-orange-600
+                          rounded-2xl shadow-lg shadow-orange-200
+                          group-hover:scale-110 group-hover:rotate-3
+                          transition-all duration-300">
+            <FileText className="w-6 h-6 text-white" />
+          </div>
+
+          <span className="text-[10px] font-bold uppercase tracking-widest
+                           text-slate-400 bg-slate-50 px-2 py-1 rounded-md
+                           border border-slate-100">
+            {note.subjectCode}
           </span>
-          <h3 className="text-white font-bold text-xl leading-tight line-clamp-2 drop-shadow-sm">
+        </div>
+
+        {/* Title & Note Name */}
+        <div className="space-y-2 mb-4">
+          <h3 className="text-lg font-extrabold text-slate-900
+                         group-hover:text-orange-600 transition-colors">
             {note.subject}
           </h3>
-        </div>
-      </div>
 
-      {/* Content Area */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex-grow">
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
-            {note.noteDescription || "No description provided for this resource."}
-          </p>
+          {/* FULL NOTE NAME (Professional UX) */}
+          <div className="flex items-start gap-2">
+            <BookOpen size={15} className="text-orange-400 mt-0.5" />
+            <p
+              title={noteTitle} // native tooltip
+              className="text-sm font-medium text-slate-600
+                         leading-snug line-clamp-3"
+            >
+              {noteTitle}
+            </p>
+          </div>
         </div>
-        <div className="pt-4 mt-auto border-t border-gray-100 flex items-center justify-between text-indigo-600">
-          <span className="text-xs font-semibold flex items-center bg-indigo-50 px-3 py-1.5 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
-            <BookOpen size={14} className="mr-2" />
-            View Details
-          </span>
+
+        {/* Description */}
+        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6">
+          {note.noteDescription ||
+            "Access comprehensive study materials and lecture highlights for this module."}
+        </p>
+
+        {/* Footer */}
+        <div className="mt-auto pt-5 border-t border-slate-50
+                        flex items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-slate-600">
+              <div className="bg-slate-100 p-1 rounded-md">
+                <GraduationCap size={14} className="text-slate-500" />
+              </div>
+              <span className="text-xs font-bold tracking-tight">
+                {formatCourseName(note.courseName)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-[11px] font-bold text-orange-600
+                               bg-orange-50 px-2 py-0.5 rounded-lg">
+                SEM {note.semester}
+              </span>
+              <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                <Clock size={12} /> 2025
+              </span>
+            </div>
+          </div>
+
+          <div className="w-10 h-10 flex items-center justify-center rounded-full
+                          bg-slate-50 group-hover:bg-orange-600
+                          group-hover:text-white transition-all">
+            <ChevronRight size={20} />
+          </div>
         </div>
       </div>
     </div>

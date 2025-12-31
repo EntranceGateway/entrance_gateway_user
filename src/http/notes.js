@@ -116,3 +116,28 @@ export const fetchPdfBlob = async (url="", token) => {
     throw new Error(message);
   }
 };
+
+// src/data/mockNotes.js
+export const notes = [
+  {
+    id: "1",
+    title: "C Programming Notes",
+    name: "BCA",
+    semester: 1,
+    affiliation: "TRIBHUVAN_UNIVERSITY",
+  },
+  {
+    id: "2",
+    title: "Discrete Mathematics",
+    name: "BCA",
+    semester: 1,
+    affiliation: "TRIBHUVAN_UNIVERSITY",
+  },
+  {
+    id: "3",
+    title: "OOP in Java",
+    name: "BCA",
+    semester: 2,
+    affiliation: "KATHMANDU_UNIVERSITY",
+  },
+];

@@ -52,7 +52,7 @@ export default function CourseGrid({ data = [] }) {
             {/* University Badge */}
             <div className="absolute top-4 left-4">
               <span className="inline-block px-4 py-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider bg-white/80 backdrop-blur-md rounded-full border border-white/50 shadow-md">
-                {course.university}
+                {course.affiliation}
               </span>
             </div>
           </div>

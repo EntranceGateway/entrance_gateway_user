@@ -1,353 +1,271 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { NotebookText, FileText, GraduationCap, Menu, X, ChevronDown, LogOut, User, Settings } from "lucide-react";
+import {
+  Menu, X, School, GraduationCap, NotebookText, FileText,
+  Newspaper, LayoutGrid, Cpu, Zap, Award, Globe,
+  ChevronDown, User, Settings, LogOut,
+} from "lucide-react";
 
-/* ========= CONFIG: Academic Programs ========= */
-const ACADEMIC_PROGRAMS = [
-  { label: "BCA", courseName: "bca" },
-  { label: "CSIT", courseName: "csit" },
-  { label: "BIM", courseName: "bim" },
-  { label: "BBM", courseName: "bbm" },
-   { label: "Software Engineerings", courseName: "Software Engineerings" },
+// Constants
+const MAIN_LINKS = [
+  { label: "Colleges", to: "/colleges", icon: School },
+  { label: "Programs", to: "/courses", icon: GraduationCap },
+  { label: "Notes", to: "/notepages", icon: NotebookText },
+  { label: "Syllabus", to: "/syllabus", icon: FileText },
+  { label: "Blog", to: "/blog", icon: Newspaper },
 ];
-const SEMESTERS = Array.from({ length: 8 }, (_, i) => ({
-  label: `${i + 1}${i === 0 ? "st" : i === 1 ? "nd" : i === 2 ? "rd" : "th"} Semester`,
-  sem: i + 1,
-}));
-const academicMenu = ACADEMIC_PROGRAMS.map(course => ({
-  label: course.label,
-  courseName: course.courseName,
-  semesters: SEMESTERS,
-}));
 
-/* ========= CONFIG: Entrance Exams ========= */
-const ENTRANCE_EXAMS = [
-  {
-    label: "BCA Entrance",
-    examKey: "bca-entrance",
-    subjects: [
-      { label: "General Knowledge", subject: "gk" },
-      { label: "English", subject: "english" },
-      { label: "Mathematics", subject: "math" },
-      { label: "Logical Reasoning", subject: "logical" },
-    ],
+const MORE_SUBMENU = [
+  { 
+    label: "Training Courses", 
+    to: "/training-courses", 
+    icon: Cpu, 
+    desc: "Professional skill programs" 
   },
-  {
-    label: "CSIT Entrance",
-    examKey: "csit-entrance",
-    subjects: [
-      { label: "General Knowledge", subject: "gk" },
-      { label: "English", subject: "english" },
-      { label: "Mathematics", subject: "math" },
-      { label: "Physics", subject: "physics" },
-      { label: "Chemistry", subject: "chemistry" },
-    ],
+  { 
+    label: "Entrance Prep", 
+    to: "/entrance-prep", 
+    icon: Zap, 
+    desc: "Model questions & guides" 
+  },
+  { 
+    label: "Scholarships", 
+    to: "/scholarships", 
+    icon: Award, 
+    desc: "Funding opportunities" 
+  },
+  { 
+    label: "Universities Info", 
+    to: "/universities", 
+    icon: Globe, 
+    desc: "Detailed university info" 
   },
 ];
 
-/* ========= MAIN NAVBAR COMPONENT ========= */
-export default function Navbar({ onLogout }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-  const location = useLocation();
+const API_CONFIG = {
+  baseURL: "http://185.177.116.173:8080/api/v1",
+  endpoints: {
+    userDetails: "/user/getUserDetails",
+  },
+};
+
+const STORAGE_KEYS = {
+  token: "token",
+  cachedUser: "cachedUser",
+};
+
+const SCROLL_THRESHOLD = 20;
+const BODY_LOCK_DELAY = 100;
+
+/**
+ * Custom hook for managing body scroll lock
+ * Prevents layout shift when hiding scrollbar
+ */
+const useBodyScrollLock = (isLocked) => {
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    // Calculate scrollbar width once on mount
+    const scrollWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    if (isLocked) {
+      // Apply body lock with exact scrollbar width
+      setScrollbarWidth(scrollWidth);
+      
+      // Use requestAnimationFrame to ensure smooth application
+      requestAnimationFrame(() => {
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = `${scrollWidth}px`;
+      });
+    } else {
+      // Delay reset to prevent flash during transitions
+      const timer = setTimeout(() => {
+        setScrollbarWidth(0);
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+      }, BODY_LOCK_DELAY);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLocked]);
+
+  return scrollbarWidth;
+};
+
+/**
+ * Custom hook for detecting scroll position
+ */
+const useScrollDetection = (threshold = SCROLL_THRESHOLD) => {
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoadingUser(false);
-      return;
-    }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > threshold);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [threshold]);
+
+  return isScrolled;
+};
+
+/**
+ * Custom hook for fetching and caching user data
+ */
+const useUserAuth = () => {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const res = await fetch("http://185.177.116.173:8080/api/v1/user/getUserDetails", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.data);
-        } else {
-          localStorage.removeItem("token");
+      const token = localStorage.getItem(STORAGE_KEYS.token);
+      
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Try to load from cache first
+      const cachedUser = localStorage.getItem(STORAGE_KEYS.cachedUser);
+      if (cachedUser) {
+        try {
+          const parsedUser = JSON.parse(cachedUser);
+          setUser(parsedUser);
+          setIsLoading(false);
+          return;
+        } catch (error) {
+          console.warn("Failed to parse cached user data:", error);
         }
-      } catch (err) {
-        console.error(err);
-        localStorage.removeItem("token");
+      }
+
+      // Fetch from API
+      try {
+        const response = await fetch(
+          `${API_CONFIG.baseURL}${API_CONFIG.endpoints.userDetails}`,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.data);
+          localStorage.setItem(STORAGE_KEYS.cachedUser, JSON.stringify(data.data));
+        } else {
+          console.error("Failed to fetch user details:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
       } finally {
-        setLoadingUser(false);
+        setIsLoading(false);
       }
     };
+
     fetchUser();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEYS.token);
+    localStorage.removeItem(STORAGE_KEYS.cachedUser);
     setUser(null);
-    if (onLogout) onLogout();
-    setIsMenuOpen(false);
-  };
+  }, []);
 
-  const getInitials = (name) => {
-    if (!name) return "U";
-    return name.trim().split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
-  };
+  return { user, isLoading, logout };
+};
 
-  const isActive = (path) => location.pathname.startsWith(path);
+/**
+ * Utility function to get user initials
+ */
+const getInitials = (name) => {
+  if (!name) return "U";
+  return name
+    .trim()
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+};
 
-  return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 transition-shadow duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-blue-600 shrink-0">
-            Entrance_Gateway
-          </Link>
-
-          {/* Desktop Menu - STRICT ORDER PRESERVED */}
-          <div className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            {/* 1. Entrance Prep (Highest Priority) */}
-            <EntrancePrepDropdown label="Entrance Prep" icon={<GraduationCap className="w-4 h-4" />} menu={ENTRANCE_EXAMS} />
-
-            {/* 2. Notes */}
-            <CourseDropdown label="Notes" menu={academicMenu} icon={<NotebookText className="w-4 h-4" />} baseUrl="/notes" />
-
-            {/* 3. Syllabus */}
-            <CourseDropdown label="Syllabus" menu={academicMenu} icon={<FileText className="w-4 h-4" />} baseUrl="/syllabus" />
-
-            {/* 4. Colleges */}
-            
-            <NavLink to="/College" active={isActive("/College")}>Colleges</NavLink>
-
-            {/* 5. Programs */}
-            <Dropdown label="Programs" links={[
-              { label: "TU Program", to: "/tuProgramList" },
-              { label: "KU Program", to: "/kuProgramList" },
-              { label: "PU Program", to: "/purProgramList" },
-              { label: "PU (Pokhara)", to: "/puProgramList" },
-            ]} />
-
-            {/* 6. University */}
-            <Dropdown label="University" links={[
-              { label: "Tribhuwan University", to: "/tribhuwan-university" },
-              { label: "Kathmandu University", to: "/kathmandu-university" },
-              { label: "Pokhara University", to: "/pokhara-university" },
-              { label: "Purbanchal University", to: "/purbanchal-university" },
-            ]} />
-
-            {/* 7. Training/Courses */}
-            <NavLink to="/training-courses" active={isActive("/training-courses")}>Training/Courses</NavLink>
-          </div>
-
-          {/* Desktop Auth */}
-          <div className="hidden md:flex items-center space-x-4">
-            {loadingUser ? (
-              <div className="w-32 h-9 bg-gray-200 rounded animate-pulse" />
-            ) : user ? (
-              <UserDropdown user={user} getInitials={getInitials} onLogout={handleLogout} />
-            ) : (
-              <>
-                <Link to="/login" className="text-gray-700 text-sm px-4 py-2 rounded-md hover:bg-gray-100 transition">
-                  Login
-                </Link>
-                <Link to="/signup" className="bg-blue-600 text-white text-sm px-5 py-2 rounded-md hover:bg-blue-700 transition shadow-sm">
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Toggle */}
-          <div className="md:hidden flex items-center space-x-3">
-            {user && !loadingUser && (
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold ring-2 ring-blue-100">
-                {getInitials(user.fullname)}
-              </div>
-            )}
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-gray-100 rounded-lg transition">
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu - SAME STRICT ORDER */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 absolute left-0 right-0 z-40">
-          <div className="px-4 py-4 space-y-2 text-sm">
-            {/* 1. Entrance Prep */}
-            <MobileEntrancePrepDropdown label="Entrance Prep" menu={ENTRANCE_EXAMS} onLinkClick={() => setIsMenuOpen(false)} />
-
-            {/* 2. Notes */}
-            <MobileCourseDropdown label="Notes" menu={academicMenu} baseUrl="/notes" onLinkClick={() => setIsMenuOpen(false)} />
-
-            {/* 3. Syllabus */}
-            <MobileCourseDropdown label="Syllabus" menu={academicMenu} baseUrl="/syllabus" onLinkClick={() => setIsMenuOpen(false)} />
-
-            {/* 4. Colleges */}
-            <MobileNavLink to="/College" onClick={() => setIsMenuOpen(false)}>Colleges</MobileNavLink>
-
-            {/* 5. Programs */}
-            <MobileDropdown label="Programs" links={[
-              { label: "TU Program", to: "/tuProgramList" },
-              { label: "KU Program", to: "/kuProgramList" },
-              { label: "PU Program", to: "/purProgramList" },
-              { label: "PU (Pokhara)", to: "/puProgramList" },
-            ]} onLinkClick={() => setIsMenuOpen(false)} />
-
-            {/* 6. University */}
-            <MobileDropdown label="University" links={[
-              { label: "Tribhuwan University", to: "/tribhuwan-university" },
-              { label: "Kathmandu University", to: "/kathmandu-university" },
-              { label: "Pokhara University", to: "/pokhara-university" },
-              { label: "Purbanchal University", to: "/purbanchal-university" },
-            ]} onLinkClick={() => setIsMenuOpen(false)} />
-
-            {/* 7. Training/Courses */}
-            <MobileNavLink to="/training-courses" onClick={() => setIsMenuOpen(false)}>Training/Courses</MobileNavLink>
-
-            <div className="border-t pt-4 mt-4">
-              {user ? (
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 pb-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-base">
-                      {getInitials(user.fullname)}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{user.fullname}</p>
-                      <p className="text-xs text-gray-500">Student Account</p>
-                    </div>
-                  </div>
-                  <MobileMenuItem to="/profile" icon={<User className="w-4 h-4" />} onClick={() => setIsMenuOpen(false)}>Profile</MobileMenuItem>
-                  <MobileMenuItem to="/settings" icon={<Settings className="w-4 h-4" />} onClick={() => setIsMenuOpen(false)}>Settings</MobileMenuItem>
-                  <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-600 text-white py-2.5 text-sm rounded-md hover:bg-red-700 transition">
-                    <LogOut className="w-4 h-4" /> Logout
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block text-center py-2.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition">
-                    Login
-                  </Link>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="block text-center py-2.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-/* =============== COMPONENTS =============== */
-const NavLink = ({ to, children, active }) => (
-  <Link to={to} className={`text-sm font-medium text-gray-700 hover:text-blue-600 transition ${active ? "text-blue-600" : ""}`}>
-    {children}
+/**
+ * Navigation Link Component
+ */
+const NavLink = ({ to, icon: Icon, label, isActive, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
+      isActive
+        ? "bg-blue-600 text-white shadow-md scale-105"
+        : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+    }`}
+  >
+    <Icon className="w-5 h-5" />
+    {label}
   </Link>
 );
 
-const Dropdown = ({ label, links }) => (
-  <div className="relative group">
-    <button className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition">
-      {label} <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition" />
-    </button>
-    <div className="absolute left-1/2 -translate-x-1/2 mt-4 w-56 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-      {links.map(l => (
-        <Link key={l.label} to={l.to} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition">
-          {l.label}
-        </Link>
-      ))}
-    </div>
-  </div>
+/**
+ * Mobile Navigation Link Component
+ */
+const MobileNavLink = ({ to, icon: Icon, label, isActive, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all ${
+      isActive 
+        ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-100" 
+        : "text-gray-700 hover:bg-gray-50"
+    }`}
+  >
+    <Icon className="w-5 h-5" />
+    {label}
+  </Link>
 );
 
-const CourseDropdown = ({ label, menu, icon, baseUrl }) => (
+/**
+ * User Profile Dropdown Component
+ */
+const UserProfileDropdown = ({ user, onLogout }) => (
   <div className="relative group">
-    <button className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition">
-      {icon} <span>{label}</span>
-      <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition" />
-    </button>
-    <div className="absolute left-1/2 -translate-x-1/2 mt-4 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-      {menu.map(course => (
-        <div key={course.courseName} className="group/course relative">
-          <div className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-            {course.label} <ChevronDown className="w-3 h-3 text-gray-500 rotate-[-90deg]" />
-          </div>
-          <div className="absolute top-0 left-full ml-1 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover/course:opacity-100 group-hover/course:visible transition-all duration-200 z-50">
-            {course.semesters.map(s => (
-              <Link
-                key={s.sem}
-                to={`${baseUrl}/${course.courseName}/${s.sem}`}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
-              >
-                {s.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const EntrancePrepDropdown = ({ label, icon, menu }) => (
-  <div className="relative group">
-    <button className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition">
-      {icon} <span>{label}</span>
-      <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition" />
-    </button>
-    <div className="absolute left-1/2 -translate-x-1/2 mt-4 w-56 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-      {menu.map(exam => (
-        <div key={exam.examKey} className="group/exam relative">
-          <div className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-            {exam.label} <ChevronDown className="w-3 h-3 text-gray-500 rotate-[-90deg]" />
-          </div>
-          <div className="absolute top-0 left-full ml-1 w-56 bg-white rounded-md shadow-lg opacity-0 invisible group-hover/exam:opacity-100 group-hover/exam:visible transition-all duration-200 z-50">
-            {exam.subjects.map(sub => (
-              <div key={sub.subject} className="group/sub relative">
-                <div className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-                  {sub.label} <ChevronDown className="w-3 h-3 text-gray-500 rotate-[-90deg]" />
-                </div>
-                <div className="absolute top-0 left-full ml-1 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-200 z-50">
-                  <Link to={`/notes/${exam.examKey}/${sub.subject}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition">
-                    Notes
-                  </Link>
-                  <Link to={`/syllabus/${exam.examKey}/${sub.subject}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition">
-                    Syllabus
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const UserDropdown = ({ user, getInitials, onLogout }) => (
-  <div className="relative group">
-    <button className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 transition">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-blue-100">
+    <button className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-100 transition shadow-sm">
+      <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
         {getInitials(user.fullname)}
       </div>
-      <ChevronDown className="w-3 h-3 text-gray-500 group-hover:rotate-180 transition" />
-    </button>
-    <div className="absolute right-0 mt-4 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-      <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-xl">
-        <p className="font-semibold text-sm">{user.fullname}</p>
-        <p className="text-xs opacity-90">{user.email || "student@entrancegateway.com"}</p>
+      <div className="text-left">
+        <p className="text-xs font-bold text-gray-900 leading-tight">{user.fullname}</p>
+        <p className="text-[10px] text-gray-500">Student</p>
       </div>
-      <div className="p-2 space-y-1">
-        <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition">
+      <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />
+    </button>
+    
+    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+      <div className="p-4 border-b border-gray-50">
+        <p className="text-xs text-gray-400">Signed in as</p>
+        <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
+      </div>
+      <div className="p-2">
+        <Link 
+          to="/profile" 
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
           <User className="w-4 h-4" /> Profile
         </Link>
-        <Link to="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition">
+        <Link 
+          to="/settings" 
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
           <Settings className="w-4 h-4" /> Settings
         </Link>
-        <div className="border-t my-1"></div>
-        <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition">
+        <hr className="my-1 border-gray-100" />
+        <button 
+          onClick={onLogout} 
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50"
+        >
           <LogOut className="w-4 h-4" /> Logout
         </button>
       </div>
@@ -355,95 +273,285 @@ const UserDropdown = ({ user, getInitials, onLogout }) => (
   </div>
 );
 
-/* =============== MOBILE COMPONENTS =============== */
-const MobileNavLink = ({ to, children, onClick }) => (
-  <Link to={to} onClick={onClick} className="block py-2.5 text-sm text-gray-700 font-medium hover:bg-gray-50 rounded-md px-4 transition">
-    {children}
-  </Link>
-);
+/**
+ * Main Navbar Component
+ */
+const Navbar = ({ onLogout }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  
+  // Custom hooks
+  const isScrolled = useScrollDetection();
+  const scrollbarWidth = useBodyScrollLock(isMenuOpen);
+  const { user, isLoading, logout } = useUserAuth();
 
-const MobileMenuItem = ({ to, children, icon, onClick }) => (
-  <Link to={to} onClick={onClick} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition">
-    {icon} {children}
-  </Link>
-);
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
-const MobileDropdown = ({ label, links, onLinkClick }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button onClick={() => setOpen(!open)} className="w-full flex justify-between items-center px-4 py-2.5 text-sm text-gray-700 font-medium hover:bg-gray-50 rounded-md transition">
-        {label} <ChevronDown className={`w-4 h-4 transition ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && links.map(l => (
-        <Link key={l.label} to={l.to} onClick={onLinkClick} className="block px-8 py-2 text-sm text-gray-600 hover:bg-gray-100 transition">
-          {l.label}
-        </Link>
-      ))}
-    </div>
+  // Memoized handlers
+  const handleMenuToggle = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    if (onLogout) onLogout();
+    setIsMenuOpen(false);
+  }, [logout, onLogout]);
+
+  const isActivePath = useCallback(
+    (path) => location.pathname === path,
+    [location.pathname]
   );
-};
 
-const MobileCourseDropdown = ({ label, menu, baseUrl, onLinkClick }) => {
-  const [open, setOpen] = useState(false);
-  const [openCourse, setOpenCourse] = useState(null);
+  // Memoized values
+  const navbarClasses = useMemo(
+    () =>
+      `fixed top-0 left-0 right-0 z-[100] transition-colors duration-300 ${
+        isScrolled || isMenuOpen
+          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100 py-1"
+          : "bg-white shadow-sm py-2"
+      }`,
+    [isScrolled, isMenuOpen]
+  );
+
+  const mobileMenuClasses = useMemo(
+    () =>
+      `lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-2xl overflow-hidden transition-all duration-300 ${
+        isMenuOpen ? "max-h-[calc(100vh-64px)] opacity-100" : "max-h-0 opacity-0"
+      }`,
+    [isMenuOpen]
+  );
+
   return (
-    <div>
-      <button onClick={() => setOpen(!open)} className="w-full flex justify-between items-center px-4 py-2.5 text-sm text-gray-700 font-medium hover:bg-gray-50 rounded-md transition">
-        {label} <ChevronDown className={`w-4 h-4 transition ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && menu.map(course => (
-        <div key={course.courseName}>
-          <button onClick={() => setOpenCourse(openCourse === course.label ? null : course.label)} className="w-full flex justify-between items-center px-8 py-2 text-sm text-gray-600 hover:bg-gray-100 transition">
-            {course.label}
-            <ChevronDown className={`w-4 h-4 transition ${openCourse === course.label ? "rotate-180" : ""}`} />
-          </button>
-          {openCourse === course.label && course.semesters.map(s => (
-            <Link key={s.sem} to={`${baseUrl}/${course.courseName}/${s.sem}`} onClick={onLinkClick} className="block px-12 py-1.5 text-xs text-gray-500 hover:bg-gray-100 transition">
-              {s.label}
+    <>
+      {/* Spacer to prevent content jump */}
+      <div className="h-16 md:h-20" />
+
+      {/* Background Overlay */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] lg:hidden transition-opacity duration-300"
+          onClick={handleMenuClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Main Navigation */}
+      <nav
+        className={navbarClasses}
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        <div 
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          style={{ 
+            paddingRight: `calc(1.5rem + ${scrollbarWidth}px)`,
+            paddingLeft: '1.5rem',
+            transition: 'padding 0s'
+          }}
+        >
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="EntranceGateway Home">
+              <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
+                EG
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-xl font-bold text-gray-900">
+                  Entrance<span className="text-blue-600">Gateway</span>
+                </span>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold -mt-1">
+                  Education Hub
+                </p>
+              </div>
             </Link>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-};
 
-const MobileEntrancePrepDropdown = ({ label, menu, onLinkClick }) => {
-  const [open, setOpen] = useState(false);
-  const [openExam, setOpenExam] = useState(null);
-  const [openSubject, setOpenSubject] = useState(null);
-  return (
-    <div>
-      <button onClick={() => setOpen(!open)} className="w-full flex justify-between items-center px-4 py-2.5 text-sm text-gray-700 font-medium hover:bg-gray-50 rounded-md transition">
-        {label} <ChevronDown className={`w-4 h-4 transition ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && menu.map(exam => (
-        <div key={exam.examKey}>
-          <button onClick={() => setOpenExam(openExam === exam.label ? null : exam.label)} className="w-full flex justify-between items-center px-8 py-2 text-sm text-gray-600 hover:bg-gray-100 transition">
-            {exam.label}
-            <ChevronDown className={`w-4 h-4 transition ${openExam === exam.label ? "rotate-180" : ""}`} />
-          </button>
-          {openExam === exam.label && exam.subjects.map(sub => (
-            <div key={sub.subject}>
-              <button onClick={() => setOpenSubject(openSubject === sub.label ? null : sub.label)} className="w-full flex justify-between items-center px-12 py-1.5 text-xs text-gray-600 hover:bg-gray-100 transition">
-                {sub.label}
-                <ChevronDown className={`w-4 h-4 transition ${openSubject === sub.label ? "rotate-180" : ""}`} />
-              </button>
-              {openSubject === sub.label && (
-                <div className="pl-16 space-y-1">
-                  <Link to={`/notes/${exam.examKey}/${sub.subject}`} onClick={onLinkClick} className="block py-1 text-xs text-blue-600">
-                    ▸ Notes
+            {/* Desktop Navigation Links */}
+            <div className="hidden lg:flex items-center gap-1">
+              {MAIN_LINKS.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  icon={link.icon}
+                  label={link.label}
+                  isActive={isActivePath(link.to)}
+                />
+              ))}
+
+              {/* More Dropdown */}
+              <div className="relative group ml-2">
+                <button 
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all"
+                  aria-haspopup="true"
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                  More
+                  <ChevronDown className="w-4 h-4 transition group-hover:rotate-180" />
+                </button>
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 translate-y-2 group-hover:translate-y-0">
+                  <div className="p-4">
+                    <p className="text-[11px] font-bold uppercase text-gray-400 tracking-wider mb-3 px-2">
+                      Resources & Training
+                    </p>
+                    <div className="grid gap-1">
+                      {MORE_SUBMENU.map((item) => (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className="flex items-center gap-4 p-3 rounded-xl hover:bg-blue-50 transition group/item"
+                        >
+                          <div className="p-2 bg-gray-100 rounded-lg text-gray-500 group-hover/item:bg-blue-600 group-hover/item:text-white transition">
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{item.label}</p>
+                            <p className="text-xs text-gray-500">{item.desc}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Auth Section */}
+            <div className="hidden lg:flex items-center gap-4">
+              {isLoading ? (
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
+              ) : user ? (
+                <UserProfileDropdown user={user} onLogout={handleLogout} />
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/login"
+                    className="px-5 py-2 text-sm font-bold text-gray-700 hover:text-blue-600 transition"
+                  >
+                    Login
                   </Link>
-                  <Link to={`/syllabus/${exam.examKey}/${sub.subject}`} onClick={onLinkClick} className="block py-1 text-xs text-gray-600 italic">
-                    ▸ Syllabus
+                  <Link
+                    to="/signup"
+                    className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200"
+                  >
+                    Sign Up
                   </Link>
                 </div>
               )}
             </div>
-          ))}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={handleMenuToggle}
+              className="lg:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
-      ))}
-    </div>
+
+        {/* Mobile Menu */}
+        <div className={mobileMenuClasses}>
+          <div className="overflow-y-auto max-h-[calc(100vh-64px)]">
+            <div className="px-4 py-6">
+              {/* Main Navigation Links */}
+              <nav className="grid gap-2" aria-label="Mobile navigation">
+                {MAIN_LINKS.map((link) => (
+                  <MobileNavLink
+                    key={link.to}
+                    to={link.to}
+                    icon={link.icon}
+                    label={link.label}
+                    isActive={isActivePath(link.to)}
+                    onClick={handleMenuClose}
+                  />
+                ))}
+              </nav>
+
+              {/* Resources Section */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4 mb-3">
+                  Resources
+                </p>
+                <nav className="grid gap-1">
+                  {MORE_SUBMENU.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={handleMenuClose}
+                      className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gray-50"
+                    >
+                      <div className="text-blue-600">
+                        <item.icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-sm font-bold text-gray-800">{item.label}</span>
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Auth Section */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                {user ? (
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                        {getInitials(user.fullname)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{user.fullname}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link
+                        to="/profile"
+                        onClick={handleMenuClose}
+                        className="flex items-center justify-center gap-2 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700"
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center gap-2 py-3 bg-red-50 rounded-xl text-sm font-bold text-red-600"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    <Link
+                      to="/login"
+                      onClick={handleMenuClose}
+                      className="w-full py-4 text-center font-bold text-gray-700 border border-gray-200 rounded-2xl"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={handleMenuClose}
+                      className="w-full py-4 text-center font-bold text-white bg-blue-600 rounded-2xl shadow-lg shadow-blue-100"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </>
   );
 };
+
+export default Navbar;

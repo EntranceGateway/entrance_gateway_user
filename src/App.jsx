@@ -10,8 +10,15 @@ import NotesGrid from "./pages/notes/notesGrid";
 import NoteDetails from "./pages/notes/NoteDetails";
 import CoursesPage from "./pages/notes/course/CoursesPage";
 import CourseDetails from "./pages/notes/course/CourseDetails";
+import NotesPage from "./pages/notes/NotePage";
+import SyllabusPage from "./pages/Register/SyllabusPage";
+import SyllabusCard from "./components/common/NoteCard/SyllabusCard";
+import SyllabusDetails from "./pages/syllabus/SyllabusDetails";
+import CollegeDetailPage from "./pages/Colleges/collegesDetail";
+import CollegesPage from "./pages/Colleges/CollegePages";
 
 function App() {
+
   return (
         <Provider store={store}>
     <BrowserRouter>
@@ -26,6 +33,11 @@ function App() {
 <Route path="/note/:id" element={<NoteDetails />} />
 <Route path="/courses" element={<CoursesPage />} />
       <Route path="/courses/:id" element={<CourseDetails />} />
+      <Route path="/notepages" element={<NotesPage />} />
+      <Route path="/syllabus" element={<SyllabusPage />} />
+            <Route path="/syllabus/:id" element={<SyllabusDetails/>} />
+<Route path="/colleges" element={<CollegesPage />} />
+<Route path="/colleges/:id" element={<CollegeDetailPage />} />
       </Routes>
     </BrowserRouter>
         </Provider>

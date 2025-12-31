@@ -1,114 +1,251 @@
-import { useMemo } from "react";
+import React, { useState, useEffect } from 'react';
 
-export default function FilterSidebar({
-  universities = [],
-  courses = [],
-  selectedUniversities,
-  setSelectedUniversities,
-  selectedCourses,
-  setSelectedCourses,
-}) {
-  // Extract unique course names (categories)
-  const courseNames = useMemo(() => {
-    return [...new Set(courses.map(c => c.name))].sort(); // Optional: sort alphabetically
-  }, [courses]);
+// Static data
+export const UNIVERSITIES = [
+  { label: "Tribhuwan University", key: "TRIBHUVAN_UNIVERSITY" },
+  { label: "Kathmandu University", key: "KATHMANDU_UNIVERSITY" },
+  { label: "Pokhara University", key: "POKHARA_UNIVERSITY" },
+  { label: "Purbanchal University", key: "PURWANCHAL_UNIVERSITY" },
+  { label: "Lumbini University", key: "LUMBINI_UNIVERSITY" },
+  { label: "Mid Western University", key: "MID_WESTERN_UNIVERSITY" },
+  { label: "Far Western University", key: "FAR_WESTERN_UNIVERSITY" },
+  { label: "Campus Affiliated to Foreign University", key: "CAMPUS_AFFILIATED_TO_FOREIGN_UNIVERSITY" },
+];
 
-  const toggleSelection = (value, selectedList, setSelectedList) => {
-    setSelectedList(prev =>
-      prev.includes(value)
-        ? prev.filter(v => v !== value)
-        : [...prev, value]
-    );
+export const SEMESTERS = [
+  { label: "1st", key: 1 }, { label: "2nd", key: 2 }, { label: "3rd", key: 3 }, { label: "4th", key: 4 },
+  { label: "5th", key: 5 }, { label: "6th", key: 6 }, { label: "7th", key: 7 }, { label: "8th", key: 8 },
+];
+export const PROVINCES = [
+  { label: "Koshi Province", key: "KOSHI" },
+  { label: "Madhesh Province", key: "MADHESH" },
+  { label: "Bagmati Province", key: "BAGMATI" },
+  { label: "Gandaki Province", key: "GANDAKI" },
+  { label: "Lumbini Province", key: "LUMBINI" },
+  { label: "Karnali Province", key: "KARNALI" },
+  { label: "Sudurpashchim Province", key: "SUDURPASHCHIM" },
+];
+
+
+const UniversalFilter = ({
+  onFilterChange,
+  showCourseName = true,
+  showSemester = true,
+  showAffiliation = true,
+  initialFilters = {},
+}) => {
+  const [courseNames, setCourseNames] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCourses, setSelectedCourses] = useState(initialFilters.courseNames || []);
+  const [selectedSemesters, setSelectedSemesters] = useState(initialFilters.semesters || []);
+  const [selectedAffiliations, setSelectedAffiliations] = useState(initialFilters.affiliations || []);
+
+  // Fetch Course Names
+  useEffect(() => {
+    const fetchCourseNames = async () => {
+      try {
+        const response = await fetch('http://185.177.116.173:8080/api/v1/courses');
+        const data = await response.json();
+        const courses = data?.data?.content || [];
+        const uniqueNames = [...new Set(courses.map((c) => c.courseName).filter(Boolean))].sort();
+        setCourseNames(uniqueNames);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      }
+    };
+    if (showCourseName) fetchCourseNames();
+  }, [showCourseName]);
+
+  useEffect(() => {
+    onFilterChange({
+      courseNames: selectedCourses,
+      semesters: selectedSemesters.map(String),
+      affiliations: selectedAffiliations,
+    });
+  }, [selectedCourses, selectedSemesters, selectedAffiliations, onFilterChange]);
+
+  const toggle = (list, setList, item) => {
+    setList(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+  };
+
+  const filteredCourses = courseNames.filter(name => 
+    name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const resetFilters = () => {
+    setSelectedCourses([]);
+    setSelectedSemesters([]);
+    setSelectedAffiliations([]);
+    setSearchTerm('');
   };
 
   return (
-    <div className="sticky top-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-80">
-      <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-          Refine Search
-        </h3>
+    <aside className="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-slate-200 
+                       flex flex-col h-fit max-h-[calc(100vh-6rem)]"> {/* Stops below navbar */}
+      
+      {/* Header */}
+      <div className="p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-xl font-bold text-slate-900">Filters</h2>
+          {(selectedCourses.length || selectedSemesters.length || selectedAffiliations.length) > 0 && (
+            <button
+              onClick={resetFilters}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition"
+            >
+              Clear All
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-slate-500">
+          {selectedCourses.length + selectedSemesters.length + selectedAffiliations.length} selected
+        </p>
       </div>
 
-      <div className="p-6 space-y-10">
-        {/* University Filter */}
-        <section>
-          <h4 className="text-sm font-bold text-slate-900 mb-4">Universities</h4>
-          <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 pr-2">
-            {universities.map(university => (
-              <FilterCheckbox
-                key={university.label}
-                label={university.label}
-                count={university.count} // Optional: show count if available
-                checked={selectedUniversities.includes(university.label)}
-                onChange={() => toggleSelection(university.label, selectedUniversities, setSelectedUniversities)}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        
+        {/* Course Section */}
+        {showCourseName && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-800">Course Name</h3>
+              {selectedCourses.length > 0 && (
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                  {selectedCourses.length}
+                </span>
+              )}
+            </div>
+
+            <div className="relative mb-4">
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                           transition-all"
               />
-            ))}
-          </div>
-        </section>
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
 
-        {/* Course Category Filter */}
-        <section>
-          <h4 className="text-sm font-bold text-slate-900 mb-4">Course Category</h4>
-          <div className="space-y-3 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 pr-2">
-            {courseNames.map(name => (
-              <FilterCheckbox
-                key={name}
-                label={name}
-                checked={selectedCourses.includes(name)}
-                onChange={() => toggleSelection(name, selectedCourses, setSelectedCourses)}
-              />
-            ))}
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-// Reusable FilterCheckbox Component
-function FilterCheckbox({ label, checked, onChange, count }) {
-  return (
-    <label className="flex items-center group cursor-pointer select-none">
-      <div className="relative flex items-center">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onChange}
-          className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-300 bg-white transition-all checked:border-orange-600 checked:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:ring-offset-1"
-        />
-        <svg
-          className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none inset-0 m-auto"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
-      <span
-        className={`ml-3 text-sm transition-colors ${
-          checked
-            ? "text-slate-900 font-semibold"
-            : "text-slate-600 group-hover:text-slate-800"
-        }`}
-      >
-        {label}
-        {count !== undefined && (
-          <span className="ml-2 text-xs text-slate-500 font-normal">({count})</span>
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+              {filteredCourses.length === 0 ? (
+                <p className="text-sm text-slate-500 text-center py-4">No courses found</p>
+              ) : (
+                filteredCourses.map((name) => (
+                  <FilterItem
+                    key={name}
+                    label={name}
+                    checked={selectedCourses.includes(name)}
+                    onChange={() => toggle(selectedCourses, setSelectedCourses, name)}
+                  />
+                ))
+              )}
+            </div>
+          </section>
         )}
-      </span>
-    </label>
-  );
-}
 
-// Example static data
-export const UNIVERSITIES = [
-  { label: "Tribhuwan University" },
-  { label: "Kathmandu University" },
-  { label: "Pokhara University" },
-  { label: "Purbanchal University" },
-  // Add more as needed...
-];
+        {/* Semester Section */}
+        {showSemester && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-800">Semester</h3>
+              {selectedSemesters.length > 0 && (
+                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                  {selectedSemesters.length}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SEMESTERS.map(({ label, key }) => (
+                <FilterItem
+                  key={key}
+                  label={`${label} Semester`}
+                  checked={selectedSemesters.includes(String(key))}
+                  onChange={() => toggle(selectedSemesters, setSelectedSemesters, String(key))}
+                  compact
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Affiliation Section */}
+        {showAffiliation && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-800">University Affiliation</h3>
+              {selectedAffiliations.length > 0 && (
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                  {selectedAffiliations.length}
+                </span>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              {UNIVERSITIES.map(({ label, key }) => (
+                <FilterItem
+                  key={key}
+                  label={label}
+                  checked={selectedAffiliations.includes(key)}
+                  onChange={() => toggle(selectedAffiliations, setSelectedAffiliations, key)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* Custom Scrollbar */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
+    </aside>
+  );
+};
+
+const FilterItem = ({ label, checked, onChange, compact = false }) => (
+  <label
+    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200
+                ${checked 
+                  ? 'bg-blue-50 border border-blue-200 shadow-sm' 
+                  : 'hover:bg-slate-50 border border-transparent'
+                } ${compact ? 'py-2' : ''}`}
+  >
+    <div className="relative">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="w-4 h-4 text-blue-600 bg-white border-2 border-slate-300 rounded 
+                   focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer 
+                   checked:border-blue-600"
+      />
+      {checked && (
+        <svg className="absolute inset-0 w-4 h-4 pointer-events-none text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+      )}
+    </div>
+    <span className={`font-medium text-sm transition-colors
+                     ${checked ? 'text-blue-900' : 'text-slate-700'}`}>
+      {label}
+    </span>
+  </label>
+);
+
+export default UniversalFilter;
