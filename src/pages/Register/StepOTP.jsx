@@ -103,7 +103,7 @@ export default function StepOTP() {
       const data = res.data;
 
       // ✅ BACKEND MATCH (this is the key fix)
-      if (!data || !data.data) {
+      if (!data || !data.data || !data.data.token || !data.data.user) {
         throw { response: { data } };
       }
 
