@@ -16,6 +16,8 @@ import SyllabusCard from "./components/common/NoteCard/SyllabusCard";
 import SyllabusDetails from "./pages/syllabus/SyllabusDetails";
 import CollegeDetailPage from "./pages/Colleges/collegesDetail";
 import CollegesPage from "./pages/Colleges/CollegePages";
+import Blogs from "./pages/blogs/BlogPage";
+import BlogDetails from "./pages/blogs/BlogDetails";
 
 function App() {
 
@@ -38,6 +40,8 @@ function App() {
             <Route path="/syllabus/:id" element={<SyllabusDetails/>} />
 <Route path="/colleges" element={<CollegesPage />} />
 <Route path="/colleges/:id" element={<CollegeDetailPage />} />
+ <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogDetails />} />
       </Routes>
     </BrowserRouter>
         </Provider>

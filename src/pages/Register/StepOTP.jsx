@@ -102,13 +102,9 @@ export default function StepOTP() {
       const res = await verifyOtp(email, otpString);
       const data = res.data;
 
-      // ✅ BACKEND MATCH (this is the key fix)
-      if (!data || !data.data || !data.data.token || !data.data.user) {
-        throw { response: { data } };
-      }
-
-      localStorage.removeItem("pendingEmail");
       navigate("/");
+      localStorage.removeItem("pendingEmail");
+
     } catch (err) {
       setError(getUserErrorMessage(err));
       triggerShake();

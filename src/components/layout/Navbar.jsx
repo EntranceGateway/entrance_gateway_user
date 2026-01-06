@@ -12,7 +12,7 @@ const MAIN_LINKS = [
   { label: "Programs", to: "/courses", icon: GraduationCap },
   { label: "Notes", to: "/notepages", icon: NotebookText },
   { label: "Syllabus", to: "/syllabus", icon: FileText },
-  { label: "Blog", to: "/blog", icon: Newspaper },
+  { label: "Blog", to: "/blogs", icon: Newspaper },
 ];
 
 const MORE_SUBMENU = [
