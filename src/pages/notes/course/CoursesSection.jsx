@@ -21,7 +21,7 @@ const DEFAULT_COURSE_IMAGE = "https://images.unsplash.com/photo-1523050854058-8d
 export default function CoursesSection() {
   const [allCourses, setAllCourses] = useState([]);
   const [displayedCourses, setDisplayedCourses] = useState([]);
-  const [affiliation, setAffiliation] = useState("All"); // Start with "All"
+  const [affiliation, setAffiliation] = useState("TRIBHUVAN_UNIVERSITY"); // Default to Tribhuvan University
   const [loading, setLoading] = useState(true);
 
   // Fetch all courses once
@@ -29,15 +29,16 @@ export default function CoursesSection() {
     const fetchAllCourses = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/courses`);
+        const res = await fetch(`${API_BASE}/courses?sort=desc`);
         if (!res.ok) throw new Error("Failed to fetch courses");
 
         const json = await res.json();
         const data = json?.data?.content || [];
 
         setAllCourses(data);
-        // Initial display: top 6 from all
-        setDisplayedCourses(data.slice(0, 6));
+        // Initial display: top 3 from Tribhuvan University (descending order)
+        const tuCourses = data.filter((course) => course.affiliation === "TRIBHUVAN_UNIVERSITY");
+        setDisplayedCourses(tuCourses.slice(0, 3));
       } catch (err) {
         console.error("Course fetch failed", err);
         setAllCourses([]);
@@ -58,8 +59,8 @@ export default function CoursesSection() {
       filtered = allCourses.filter((course) => course.affiliation === affiliation);
     }
 
-    // Always show max 6 courses
-    setDisplayedCourses(filtered.slice(0, 6));
+    // Always show max 3 courses
+    setDisplayedCourses(filtered.slice(0, 3));
   }, [affiliation, allCourses]);
 
   // Animation variants
@@ -160,7 +161,7 @@ export default function CoursesSection() {
           <AnimatePresence mode="popLayout">
             {loading ? (
               // Skeleton Loaders
-              Array.from({ length: 6 }).map((_, i) => (
+              Array.from({ length: 3 }).map((_, i) => (
                 <motion.div
                   key={`skeleton-${i}`}
                   initial={{ opacity: 0 }}

@@ -5,8 +5,9 @@ import NoticeCard from "../../components/notices/noticeCard";
 import Pagination from "../../components/Pagination/pagination";
 import { getNoticeById, getNotices } from "../../http/notices";
 import { Search, RefreshCcw, Bell, AlertCircle } from "lucide-react";
+import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
 export default function AddNotice() {
 	const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ export default function AddNotice() {
 	);
 
 	const handlePageChange = (newPage) => {
-		setCurrentPage(newPage);
+		fetchNotices(newPage, query);
 	};
 
 	const handleCardClick = async (notice) => {
@@ -227,10 +228,12 @@ export default function AddNotice() {
 
 							{/* Pagination */}
 							<Pagination
-								currentPage={currentPage}
+								page={currentPage}
 								totalPages={filteredTotalPages}
+								totalItems={sortedAndFiltered.length}
+								pageSize={PAGE_SIZE}
 								onPageChange={handlePageChange}
-								isLoading={loading}
+								isDisabled={loading}
 								showPageInfo={true}
 							/>
 						</>

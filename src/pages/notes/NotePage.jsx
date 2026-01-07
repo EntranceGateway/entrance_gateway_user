@@ -5,8 +5,7 @@ import Pagination from "../../components/Pagination/pagination";
 import { Menu, X } from "lucide-react";
 import UniversalFilter from "../../components/FilterSidebar/FilterSidebar";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-
-const PAGE_SIZE = 12;
+import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
 
 export default function NotesPage() {
   /* =======================
@@ -70,16 +69,11 @@ export default function NotesPage() {
     }
   };
 
-  const totalPages = useMemo(() => Math.ceil(notes.length / PAGE_SIZE), [notes.length]);
+  const totalPages = useMemo(() => Math.ceil(notes.length / DEFAULT_PAGE_SIZE), [notes.length]);
   const paginated = useMemo(
-    () => notes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    () => notes.slice((currentPage - 1) * DEFAULT_PAGE_SIZE, currentPage * DEFAULT_PAGE_SIZE),
     [notes, currentPage]
   );
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   /* =======================
      UI
@@ -189,10 +183,12 @@ export default function NotesPage() {
 
                 {/* Pagination */}
                 <Pagination
-                  currentPage={currentPage}
+                  page={currentPage}
+                  totalItems={notes.length}
+                  pageSize={DEFAULT_PAGE_SIZE}
                   totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  isLoading={loading}
+                  onPageChange={setCurrentPage}
+                  isDisabled={loading}
                   showPageInfo={true}
                 />
               </>

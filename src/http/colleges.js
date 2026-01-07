@@ -1,50 +1,73 @@
-// src/pages/CollegeDetailPage.jsx
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import api from "../../api"; // adjust path if needed
+import axios from "axios";
+import { DEFAULT_PAGE_SIZE, uiToServerPage } from "../constants/pagination";
 
-const CollegeDetailPage = () => {
-  const { id } = useParams();
-  const [college, setCollege] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Colleges API uses a different base URL
+const collegesApi = axios.create({
+  baseURL: "http://185.177.116.173:8080",
+});
 
-  useEffect(() => {
-    const fetchCollege = async () => {
-      try {
-        const res = await api.get(`/api/v1/colleges/${id}`);
-        setCollege(res.data.data);
-      } catch (err) {
-        console.error(err);
-        setCollege(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+// Attach token automatically
+collegesApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-    fetchCollege();
-  }, [id]);
+/**
+ * Get paginated list of colleges
+ * @param {Object} params - Query parameters
+ * @param {number} params.page - UI page number (1-indexed)
+ * @param {number} params.size - Page size
+ * @returns {Promise<{items: Array, page: Object}>}
+ */
+export const getColleges = async ({ page = 1, size = DEFAULT_PAGE_SIZE } = {}) => {
+  const res = await collegesApi.get("/api/v1/colleges", {
+    params: {
+      page: uiToServerPage(page),
+      size,
+    },
+  });
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!college)
-    return (
-      <div className="p-8 text-center text-red-600">
-        College not found
-      </div>
-    );
-
-  return (
-    <div className="max-w-4xl mx-auto p-8">
-      <Link to="/colleges" className="text-blue-600 hover:underline mb-6 inline-block">
-        ← Back to Colleges
-      </Link>
-
-      <h1 className="text-4xl font-bold mb-4">
-        {college.collegeName}
-      </h1>
-
-      <p>{college.address}</p>
-    </div>
-  );
+  const data = res.data?.data || {};
+  return {
+    items: data.content || [],
+    page: data.page || {},
+  };
 };
 
-export default CollegeDetailPage;
+/**
+ * Search colleges by name
+ * @param {Object} params - Query parameters
+ * @param {string} params.name - Search query
+ * @param {number} params.page - UI page number (1-indexed)
+ * @param {number} params.size - Page size
+ * @returns {Promise<{items: Array, page: Object}>}
+ */
+export const searchColleges = async ({ name, page = 1, size = DEFAULT_PAGE_SIZE }) => {
+  const res = await collegesApi.get("/api/v1/colleges/search", {
+    params: {
+      name,
+      page: uiToServerPage(page),
+      size,
+    },
+  });
+
+  const data = res.data?.data || {};
+  return {
+    items: data.content || [],
+    page: data.page || {},
+  };
+};
+
+/**
+ * Get single college by ID
+ * @param {string|number} id - College ID
+ * @returns {Promise<Object|null>}
+ */
+export const getCollegeById = async (id) => {
+  if (!id) throw new Error("College ID is required");
+  const res = await collegesApi.get(`/api/v1/colleges/${id}`);
+  return res.data?.data || null;
+};

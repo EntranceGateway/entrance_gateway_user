@@ -20,6 +20,7 @@ import Blogs from "./pages/blogs/BlogPage";
 import BlogDetails from "./pages/blogs/BlogDetails";
 import AddNotice from "./pages/notice/addNotice";
 import NoticeDetails from "./pages/notice/noticeDetails";
+import BlogP from "./components/Pagination/hh";
 
 function App() {
 
@@ -46,6 +47,7 @@ function App() {
         <Route path="/blogs/:id" element={<BlogDetails />} />
         <Route path="/notices" element={<AddNotice />} />
         <Route path="/notices/:id" element={<NoticeDetails />} />
+        <Route path="/blogp" element={<BlogP />} />
       </Routes>
     </BrowserRouter>
         </Provider>

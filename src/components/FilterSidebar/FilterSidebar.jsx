@@ -45,7 +45,7 @@ const UniversalFilter = ({
   useEffect(() => {
     const fetchCourseNames = async () => {
       try {
-       const courses = await getCourses();
+       const { items: courses } = await getCourses();
 
         const uniqueNames = [...new Set(courses.map((c) => c.courseName).filter(Boolean))].sort();
         setCourseNames(uniqueNames);

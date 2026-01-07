@@ -1,192 +1,182 @@
-// src/pages/CollegesPage.jsx
-import React, { useState, useEffect } from 'react';
-import CollegeCard from '../../components/collegecard/CollegeCard';
-import DashboardLayout from '../../components/layout/DashboardLayout';
-import Pagination from '../../components/Pagination/pagination';
+import React, { useEffect, useState } from "react";
+import CollegeCard from "../../components/collegecard/CollegeCard";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import Pagination from "../../components/Pagination/pagination";
+import { Search, X, RefreshCw } from "lucide-react";
+
+const PAGE_SIZE = 12;
+const API_BASE = "http://185.177.116.173:8080/api/v1/colleges";
 
 const CollegesPage = () => {
   const [colleges, setColleges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // Pagination state (1-based)
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
 
-  const PAGE_SIZE = 12;
-  const API_BASE = 'http://185.177.116.173:8080/api/v1/colleges';
-
-  const fetchColleges = async (query = '', pageNum = 1) => {
+  // Unified fetch function for search & pagination
+  const fetchColleges = async ({ query = "", uiPage = 1 }) => {
     try {
       setLoading(true);
       setError(null);
 
-      let url;
-      if (query.trim()) {
-        url = `http://185.177.116.173:8080/api/v1/colleges/search?name=${encodeURIComponent(query.trim())}&page=${pageNum - 1}&size=${PAGE_SIZE}`;
-      } else {
-        url = `${API_BASE}?page=${pageNum - 1}&size=${PAGE_SIZE}`;
-      }
+      const apiPage = uiPage - 1; // Convert to 0-based for API
 
-      console.log('Fetching from:', url);
+      const url = query.trim()
+        ? `${API_BASE}/search?name=${encodeURIComponent(query.trim())}&page=${apiPage}&size=${PAGE_SIZE}`
+        : `${API_BASE}?page=${apiPage}&size=${PAGE_SIZE}`;
 
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch colleges");
 
-      const jsonData = await response.json();
-      console.log('API Response:', jsonData);
+      const json = await res.json();
+      const data = json?.data || {};
 
-      // Extract from the exact structure: { message, data: { content, page } }
-      const content = jsonData?.data?.content || [];
-      const pageInfo = jsonData?.data?.page || {};
-
-      const totalPagesFromApi = pageInfo.totalPages || 1;
-      const totalElementsFromApi = pageInfo.totalElements || content.length;
-
-      setColleges(content);
-      setTotalPages(totalPagesFromApi);
-      setTotalElements(totalElementsFromApi);
-      setPage(pageNum);
-
-      console.log(`Loaded page ${pageNum}: ${content.length} colleges | Total: ${totalElementsFromApi} | Pages: ${totalPagesFromApi}`);
-    } catch (err) {
-      setError('Failed to load colleges. Please try again later.');
-      console.error('Fetch error:', err);
+      setColleges(data.content || []);
+      setTotalPages(data.page?.totalPages || data.totalPages || 1);
+      setTotalElements(data.page?.totalElements || data.totalElements || 0);
+      setPage(uiPage);
+    } catch (e) {
+      console.error("Fetch error:", e);
+      setError(e.message || "Something went wrong");
       setColleges([]);
-      setTotalPages(1);
-      setTotalElements(0);
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial load
   useEffect(() => {
-    fetchColleges('', 1);
+    fetchColleges({ uiPage: 1 });
   }, []);
 
-  const handleSearchClick = () => {
-    if (searchTerm.trim()) {
-      fetchColleges(searchTerm.trim(), 1);
-    } else {
-      fetchColleges('', 1);
-    }
+  // Search handler
+  const handleSearch = () => {
+    fetchColleges({ query: searchTerm.trim(), uiPage: 1 });
   };
 
+  // Clear search
   const clearSearch = () => {
-    setSearchTerm('');
-    fetchColleges('', 1);
+    setSearchTerm("");
+    fetchColleges({ query: "", uiPage: 1 });
   };
 
+  // Pagination handler
   const handlePageChange = (newPage) => {
-    fetchColleges(searchTerm.trim(), newPage);
+    fetchColleges({ query: searchTerm.trim(), uiPage: newPage });
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSearchClick();
-    }
-  };
+  // Calculate display range
+  const startItem = totalElements > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
+  const endItem = Math.min(page * PAGE_SIZE, totalElements);
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="min-h-screen bg-linear-to-b from-slate-50 to-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-8">Colleges in Nepal</h1>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Colleges in Nepal
+            </h1>
+            <p className="mt-2 text-lg text-slate-500">
+              Discover and explore educational institutions across Nepal
+            </p>
+          </div>
 
           {/* Search Bar */}
-          <div className="mb-10 max-w-2xl mx-auto">
+          <div className="mb-10 max-w-2xl">
             <div className="relative flex items-center">
+              <Search className="absolute left-4 w-5 h-5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search colleges by name, location, course, or university..."
+                placeholder="Search by college name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 pl-12 pr-36 py-4 text-lg bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="w-full pl-12 pr-28 py-4 text-lg bg-white border-2 border-slate-200 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
               />
-
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-
               {searchTerm && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-20 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-24 p-1 text-slate-400 hover:text-slate-600 transition"
                   aria-label="Clear search"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X size={20} />
                 </button>
               )}
-
               <button
-                onClick={handleSearchClick}
+                onClick={handleSearch}
                 disabled={loading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition"
+                className="absolute right-2 px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md hover:shadow-lg"
               >
-                {loading ? 'Searching...' : 'Search'}
+                {loading ? <RefreshCw size={18} className="animate-spin" /> : "Search"}
               </button>
             </div>
 
             {searchTerm && !loading && colleges.length > 0 && (
-              <p className="mt-3 text-sm text-slate-600 text-center">
-                Showing results for: <span className="font-medium">"{searchTerm}"</span>
+              <p className="mt-3 text-sm text-slate-500">
+                Showing results for: <span className="font-semibold text-slate-700">"{searchTerm}"</span>
               </p>
             )}
           </div>
 
-          {/* Results */}
-          <div className="flex-1">
-            {loading && colleges.length === 0 ? (
-              <div className="flex justify-center items-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600"></div>
+          {/* Content */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+              <p className="mt-4 text-slate-500 font-medium">Loading colleges...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16 bg-white rounded-2xl border-2 border-red-100">
+              <p className="text-red-600 text-lg font-medium">{error}</p>
+              <button
+                onClick={() => fetchColleges({ query: searchTerm, uiPage: 1 })}
+                className="mt-4 px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : colleges.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-slate-400" />
               </div>
-            ) : error ? (
-              <div className="text-center py-12 bg-white rounded-xl shadow">
-                <p className="text-red-600 text-lg">{error}</p>
+              <p className="text-lg font-semibold text-slate-700">
+                {searchTerm ? `No colleges found for "${searchTerm}"` : "No colleges available"}
+              </p>
+              <p className="text-slate-500 mt-1">Try a different search term</p>
+            </div>
+          ) : (
+            <>
+              {/* Results Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {colleges.map((college) => (
+                  <CollegeCard key={college.collegeId} college={college} />
+                ))}
               </div>
-            ) : colleges.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl shadow">
-                <p className="text-slate-600 text-lg">
-                  {searchTerm
-                    ? `No colleges found for "${searchTerm}"`
-                    : 'No colleges available at the moment.'}
+
+              {/* Results Count */}
+              <div className="mt-8 text-center">
+                <p className="text-sm font-medium text-slate-500">
+                  Showing <span className="text-slate-800 font-bold">{startItem}–{endItem}</span> of{" "}
+                  <span className="text-slate-800 font-bold">{totalElements}</span> colleges
                 </p>
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {colleges.map((college) => (
-                    <CollegeCard
-                      key={college.collegeId} // Use collegeId as key
-                      college={college}
-                    />
-                  ))}
-                </div>
 
-                <div className="mt-6 text-center text-slate-600">
-                  Showing {(page - 1) * PAGE_SIZE + colleges.length} of {totalElements} college{totalElements !== 1 ? 's' : ''}
-                </div>
-
-                {totalPages > 1 && (
-                  <div className="mt-10 flex justify-center">
-                    <Pagination
-                      currentPage={page}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                      isLoading={loading}
-                      showPageInfo={true}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              {/* Pagination */}
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                isLoading={loading}
+              />
+            </>
+          )}
         </div>
       </div>
     </DashboardLayout>

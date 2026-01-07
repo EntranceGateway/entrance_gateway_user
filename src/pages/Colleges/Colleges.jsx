@@ -1,29 +1,52 @@
 import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, ExternalLink, ArrowRight, Building2 } from "lucide-react";
+import Pagination from "../../components/Pagination/pagination";
+import { uiToServerPage } from "../../constants/pagination";
 
 export default function Colleges() {
   const [colleges, setColleges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
 
   // The default image URL provided
   const DEFAULT_IMAGE = "https://i.pinimg.com/1200x/d1/18/66/d11866060740b0a32b219dc3581caaeb.jpg";
+  const PAGE_SIZE = 6;
+
+  const fetchColleges = async (pageNumber = 1) => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `http://185.177.116.173:8080/api/v1/colleges?page=${uiToServerPage(pageNumber)}&size=${PAGE_SIZE}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      const payload = data?.data || {};
+      setColleges(payload.content || []);
+      setTotalPages(payload.page?.totalPages || 1);
+      setTotalElements(payload.page?.totalElements || payload.content?.length || 0);
+      setPage(pageNumber);
+      setError(false);
+    } catch (err) {
+      setError(true);
+      setColleges([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch("http://185.177.116.173:8080/api/v1/colleges?page=0&size=6")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
-      })
-      .then((data) => {
-        setColleges(data?.data?.content || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
+    fetchColleges(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handlePageChange = (nextPage) => {
+    if (nextPage !== page) {
+      fetchColleges(nextPage);
+    }
+  };
 
   if (error) {
     return (
@@ -72,12 +95,19 @@ export default function Colleges() {
           )}
         </div>
 
-        {/* Mobile View All Button */}
-        <div className="mt-12 md:hidden flex justify-center">
-          <button className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">
-             View All Campuses <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalElements}
+              pageSize={PAGE_SIZE}
+              onPageChange={handlePageChange}
+              isDisabled={loading}
+              showPageInfo
+            />
+          </div>
+        )}
       </div>
     </section>
   );

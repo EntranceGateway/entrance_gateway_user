@@ -4,6 +4,7 @@ import CourseGrid from "../../../components/CourseGrid/CourseGrid";
 import Pagination from "../../../components/Pagination/pagination";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import UniversalFilter from "../../../components/FilterSidebar/FilterSidebar";
+import { DEFAULT_PAGE_SIZE } from "../../../constants/pagination";
 
 // Normalize API data for display
 const normalizeCourses = (data) =>
@@ -29,16 +30,16 @@ export default function CoursesPage() {
   const [activeFilters, setActiveFilters] = useState({
     courseNames: [],
     semesters: [],
-    affiliations: [],
+    affiliations: ["TRIBHUVAN_UNIVERSITY"],
   });
   const [page, setPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = DEFAULT_PAGE_SIZE / 2;
 
   // Fetch courses on mount
   useEffect(() => {
     getCourses()
-      .then((data) => {
-        const normalized = normalizeCourses(data);
+      .then(({ items }) => {
+        const normalized = normalizeCourses(items);
         setCourses(normalized);
         setFiltered(normalized);
       })
@@ -142,7 +143,9 @@ export default function CoursesPage() {
               {totalPages > 1 && (
                 <div className="mt-12 flex justify-center">
                   <Pagination
-                    currentPage={page}
+                    page={page}
+                    totalItems={filtered.length}
+                    pageSize={pageSize}
                     totalPages={totalPages}
                     onPageChange={setPage}
                   />

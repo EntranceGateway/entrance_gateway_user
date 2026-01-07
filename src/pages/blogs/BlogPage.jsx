@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BlogCard from "../../components/common/Blog/BlogCard";
 import { fetchBlogs } from "../../http/blogApi";
 import Pagination from "../../components/Pagination/pagination";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-
-const PAGE_SIZE = 12;
+import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -18,18 +17,16 @@ const Blogs = () => {
       .then((res) => {
         const content = res.data?.content || [];
         setBlogs(content);
-        setTotalPages(Math.ceil(content.length / PAGE_SIZE));
+        setTotalPages(Math.ceil(content.length / DEFAULT_PAGE_SIZE));
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
-  const paginated = blogs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const paginated = useMemo(
+    () => blogs.slice((currentPage - 1) * DEFAULT_PAGE_SIZE, currentPage * DEFAULT_PAGE_SIZE),
+    [blogs, currentPage]
+  );
 
   if (loading) {
     return (
@@ -95,10 +92,12 @@ const Blogs = () => {
 
               {/* Pagination */}
               <Pagination
-                currentPage={currentPage}
+                page={currentPage}
+                totalItems={blogs.length}
+                pageSize={DEFAULT_PAGE_SIZE}
                 totalPages={totalPages}
-                onPageChange={handlePageChange}
-                isLoading={loading}
+                onPageChange={setCurrentPage}
+                isDisabled={loading}
                 showPageInfo={true}
               />
             </>

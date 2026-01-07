@@ -3,13 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getNotesByCourse } from "../../http/notes";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import Pagination from "../../components/Pagination/pagination";
+import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
 
 import NoteCard from "../../components/common/NoteCard/NoteCard";
 import NotesSkeleton from "../../components/common/NoteCard/NotesSkeleton";
 import EmptyState from "../../components/common/NoteCard/EmptyState";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-
-const PAGE_SIZE = 12;
 
 export default function NotesGrid() {
   const { course, sem } = useParams();
@@ -35,16 +34,11 @@ export default function NotesGrid() {
     if (course && sem) fetchNotes();
   }, [course, sem]);
 
-  const totalPages = useMemo(() => Math.ceil(notes.length / PAGE_SIZE), [notes.length]);
+  const totalPages = useMemo(() => Math.ceil(notes.length / DEFAULT_PAGE_SIZE), [notes.length]);
   const paginated = useMemo(
-    () => notes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    () => notes.slice((currentPage - 1) * DEFAULT_PAGE_SIZE, currentPage * DEFAULT_PAGE_SIZE),
     [notes, currentPage]
   );
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   // Correctly handle the note ID
   const handleCardClick = (note) => {
@@ -126,10 +120,12 @@ export default function NotesGrid() {
 
               {/* Pagination */}
               <Pagination
-                currentPage={currentPage}
+                page={currentPage}
+                totalItems={notes.length}
+                pageSize={DEFAULT_PAGE_SIZE}
                 totalPages={totalPages}
-                onPageChange={handlePageChange}
-                isLoading={loading}
+                onPageChange={setCurrentPage}
+                isDisabled={loading}
                 showPageInfo={true}
               />
             </>

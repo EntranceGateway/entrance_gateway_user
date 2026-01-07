@@ -5,8 +5,9 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import SyllabusCard from "../../components/common/NoteCard/SyllabusCard";
 import Pagination from "../../components/Pagination/pagination";
 import UniversalFilter from "../../components/FilterSidebar/FilterSidebar";
+import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
 export default function SyllabusPage() {
   const [loading, setLoading] = useState(false);
@@ -53,11 +54,6 @@ export default function SyllabusPage() {
     () => syllabi.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
     [syllabi, currentPage]
   );
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   return (
     <DashboardLayout>
@@ -161,10 +157,12 @@ export default function SyllabusPage() {
 
                   {/* Pagination */}
                   <Pagination
-                    currentPage={currentPage}
+                    page={currentPage}
+                    totalItems={syllabi.length}
+                    pageSize={PAGE_SIZE}
                     totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                    isLoading={loading}
+                    onPageChange={setCurrentPage}
+                    isDisabled={loading}
                     showPageInfo={true}
                   />
                 </>

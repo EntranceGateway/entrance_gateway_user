@@ -13,7 +13,12 @@ export const createCourse = async (data) => {
 // --------------------------------------
 export const getCourses = async (params = {}) => {
   const res = await api.get("/api/v1/courses", { params });
-  return res.data?.data?.content || [];
+  const data = res.data?.data || {};
+
+  return {
+    items: data.content || [],
+    page: data.page || {},
+  };
 };
 
 // --------------------------------------

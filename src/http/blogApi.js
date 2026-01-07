@@ -1,12 +1,19 @@
 import api from "./index";
+import { DEFAULT_PAGE_SIZE } from "../constants/pagination";
 
-export const fetchBlogs = async () => {
+export const fetchBlogs = async (params = {}) => {
   try {
-    const res = await api.get("/api/v1/blogs?page=0&size=10&sortBy=createdDate&sortDir=desc");
+    const res = await api.get("/api/v1/blogs", {
+      params: {
+        page: 0,
+        size: DEFAULT_PAGE_SIZE,
+        sortBy: "createdDate",
+        sortDir: "desc",
+        ...params,
+      },
+    });
     return res.data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch blogs"
-    );
+    throw new Error(error.response?.data?.message || "Failed to fetch blogs");
   }
 };
