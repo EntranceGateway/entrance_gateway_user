@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import CollegeCard from '../../components/collegecard/CollegeCard';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import Pagination from '../../components/pagination/Pagination';
+import Pagination from '../../components/Pagination/pagination';
 
 const CollegesPage = () => {
   const [colleges, setColleges] = useState([]);
@@ -176,11 +176,11 @@ const CollegesPage = () => {
                 {totalPages > 1 && (
                   <div className="mt-10 flex justify-center">
                     <Pagination
-                      page={page}
+                      currentPage={page}
                       totalPages={totalPages}
                       onPageChange={handlePageChange}
-                      labels={{ prev: 'Previous', next: 'Next' }}
-                      showNumbers={true}
+                      isLoading={loading}
+                      showPageInfo={true}
                     />
                   </div>
                 )}

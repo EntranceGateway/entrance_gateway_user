@@ -183,7 +183,7 @@ const PdfViewer = ({ noteId, token, fetchPdfBlob, suburl }) => {
         <div ref={viewerRef} className={containerClass}>
 
             {/* --- TOP TOOLBAR (Professional Look) --- */}
-            <div className={`flex justify-between items-center p-3 transition-all ${isFullScreen ? 'bg-gray-800 text-white shadow-lg flex-shrink-0' : 'bg-white border-b border-gray-200'}`}>
+            <div className={`flex justify-between items-center p-3 transition-all ${isFullScreen ? 'bg-gray-800 text-white shadow-lg shrink-0' : 'bg-white border-b border-gray-200'}`}>
                 
                 {/* Page Navigation */}
                 <div className="flex items-center space-x-2">

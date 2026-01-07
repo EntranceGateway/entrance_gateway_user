@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import api from "../../http";
 import NoteCard from "../../components/common/NoteCard/NoteCard";
+import Pagination from "../../components/Pagination/pagination";
 import { Menu, X } from "lucide-react";
 import UniversalFilter from "../../components/FilterSidebar/FilterSidebar";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+
+const PAGE_SIZE = 12;
 
 export default function NotesPage() {
   /* =======================
@@ -16,6 +19,7 @@ export default function NotesPage() {
      DATA STATE
   ======================= */
   const [notes, setNotes] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   /* =======================
      FILTER STATE (SINGLE SOURCE OF TRUTH)
@@ -31,6 +35,7 @@ export default function NotesPage() {
   ======================= */
   useEffect(() => {
     fetchNotes();
+    setCurrentPage(1); // Reset to first page when filters change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
 
@@ -65,6 +70,17 @@ export default function NotesPage() {
     }
   };
 
+  const totalPages = useMemo(() => Math.ceil(notes.length / PAGE_SIZE), [notes.length]);
+  const paginated = useMemo(
+    () => notes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [notes, currentPage]
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   /* =======================
      UI
   ======================= */
@@ -86,7 +102,7 @@ export default function NotesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
           {/* Filter Sidebar */}
           <aside
-            className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-md lg:rounded-xl lg:top-8 lg:sticky lg:h-fit
+            className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:sticky lg:translate-x-0 lg:shadow-md lg:rounded-xl lg:top-8 lg:h-fit
               ${isFilterVisible ? "translate-x-0" : "-translate-x-full"}
             `}
           >
@@ -164,11 +180,22 @@ export default function NotesPage() {
                 </p>
               </div>
             ) : (
-<div className="grid grid-cols-1 md:grid-cols-[0.3fr_0.8fr] xl:grid-cols-[0.4fr_0.2fr] gap-6">
-                {notes.map((note) => (
-                  <NoteCard key={note.noteId} note={note} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-[0.3fr_0.8fr] xl:grid-cols-[0.4fr_0.2fr] gap-6">
+                  {paginated.map((note) => (
+                    <NoteCard key={note.noteId} note={note} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  isLoading={loading}
+                  showPageInfo={true}
+                />
+              </>
             )}
           </main>
         </div>

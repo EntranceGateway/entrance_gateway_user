@@ -10,7 +10,7 @@ export default function MockTestHero() {
   ];
 
   return (
-    <section className="min-h-screen flex items-center bg-gradient-to-br from-blue-600 via-indigo-700 to-blue-800 px-6 relative overflow-hidden">
+    <section className="min-h-screen flex items-center bg-linear-to-br from-blue-600 via-indigo-700 to-blue-800 px-6 relative overflow-hidden">
       {/* Subtle background overlay for depth */}
       <div className="absolute inset-0 bg-black/10" />
 

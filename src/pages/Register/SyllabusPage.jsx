@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import api from "../../http";
 import { Menu, X,SearchX } from "lucide-react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import SyllabusCard from "../../components/common/NoteCard/SyllabusCard";
+import Pagination from "../../components/Pagination/pagination";
 import UniversalFilter from "../../components/FilterSidebar/FilterSidebar";
+
+const PAGE_SIZE = 12;
 
 export default function SyllabusPage() {
   const [loading, setLoading] = useState(false);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [syllabi, setSyllabi] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState({
     courseNames: ["CSIT"],
     semesters: ["1"],
@@ -17,6 +21,7 @@ export default function SyllabusPage() {
 
   useEffect(() => {
     fetchSyllabus();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [activeFilters]);
 
   const fetchSyllabus = async () => {
@@ -41,6 +46,17 @@ export default function SyllabusPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const totalPages = useMemo(() => Math.ceil(syllabi.length / PAGE_SIZE), [syllabi.length]);
+  const paginated = useMemo(
+    () => syllabi.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [syllabi, currentPage]
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -136,11 +152,22 @@ export default function SyllabusPage() {
                   <p className="text-slate-500 text-sm max-w-xs mx-auto">Adjust your filters to find the syllabus you are looking for.</p>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-                  {syllabi.map((syllabus) => (
-                    <SyllabusCard key={syllabus.syllabusId} syllabus={syllabus} />
-                  ))}                  
-                </div>
+                <>
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                    {paginated.map((syllabus) => (
+                      <SyllabusCard key={syllabus.syllabusId} syllabus={syllabus} />
+                    ))}                  
+                  </div>
+
+                  {/* Pagination */}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    isLoading={loading}
+                    showPageInfo={true}
+                  />
+                </>
               )}
             </main>
           </div>

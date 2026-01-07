@@ -51,7 +51,7 @@ export default function NoteCard({ note }) {
       <div className="p-6 relative flex flex-col h-full">
         {/* Header */}
         <div className="flex items-start justify-between mb-5">
-          <div className="p-3.5 bg-gradient-to-br from-orange-500 to-orange-600
+          <div className="p-3.5 bg-linear-to-br from-orange-500 to-orange-600
                           rounded-2xl shadow-lg shadow-orange-200
                           group-hover:scale-110 group-hover:rotate-3
                           transition-all duration-300">

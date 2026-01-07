@@ -158,7 +158,7 @@ const CollegeDetailPage = () => {
               {/* Hero with Logo */}
               <section>
                 <div className="flex items-center gap-6 mb-8">
-                  <div className="w-32 h-32 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white flex-shrink-0">
+                  <div className="w-32 h-32 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white shrink-0">
                     <img
                       src={getLogoUrl(college.logoName)}
                       alt={`${college.collegeName} logo`}

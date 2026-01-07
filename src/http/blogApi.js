@@ -1,7 +1,12 @@
-const API_BASE = "http://185.177.116.173:8080/api/v1";
+import api from "./index";
 
 export const fetchBlogs = async () => {
-  const res = await fetch(`${API_BASE}/blogs`);
-  if (!res.ok) throw new Error("Failed to fetch blogs");
-  return res.json();
+  try {
+    const res = await api.get("/api/v1/blogs?page=0&size=10&sortBy=createdDate&sortDir=desc");
+    return res.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch blogs"
+    );
+  }
 };

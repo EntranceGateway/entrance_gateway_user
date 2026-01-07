@@ -95,8 +95,8 @@ const EnhancedInput = ({
 
       {error && (
         <p className="text-sm text-red-600 flex items-start gap-1.5 mt-1">
-          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span className="break-words">{error}</span>
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span className="wrap-break-word">{error}</span>
         </p>
       )}
     </div>
@@ -337,7 +337,7 @@ export default function Register() {
 
           <h1 className="text-5xl xl:text-6xl font-black leading-tight mb-6">
             Transform your<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-400">
               future
             </span>{" "}today.
           </h1>
@@ -413,7 +413,7 @@ export default function Register() {
                   <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-red-900 font-bold text-lg mb-1">Registration Failed</p>
-                    <p className="text-red-700 text-sm break-words">{generalError}</p>
+                    <p className="text-red-700 text-sm wrap-break-word">{generalError}</p>
                   </div>
                   <button
                     onClick={() => {
@@ -533,7 +533,7 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={isLoading || showSuccess}
-                className="w-full py-4 px-6 mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg font-bold rounded-xl shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none group"
+                className="w-full py-4 px-6 mt-8 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg font-bold rounded-xl shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none group"
               >
                 {isLoading ? (
                   <>

@@ -1,6 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdCard from "../components/common/Adcard/Adcard";
 import Card from "../components/common/Card";
 import AdsPanel from "../components/layout/AdsPanel";
@@ -13,7 +15,7 @@ const Dashboard = ({ showAds = false, show = true }) => {
   return (
     <DashboardLayout>
       <div className="flex flex-1 w-full">
-        <div className="max-w-7xl w-full mx-auto px-4 md:px-8 py-6 flex gap-6">
+        <div className="max-w-7xl w-full mx-auto px-4 md:px-8 py-0 flex gap-6">
           <main className={`bg-white rounded-2xl shadow-lg p-6 md:p-8 ${showAds ? "flex-1" : "w-full"}`}>
             
             {show && (
@@ -97,7 +99,7 @@ const Dashboard = ({ showAds = false, show = true }) => {
                           transition={{ delay: 0.2 + index * 0.1 }}
                           className="flex gap-4 bg-white/70 backdrop-blur p-6 rounded-xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100"
                         >
-                          <div className={`w-12 h-12 flex items-center justify-center rounded-full text-2xl flex-shrink-0 
+                          <div className={`w-12 h-12 flex items-center justify-center rounded-full text-2xl shrink-0 
                             ${feature.color === 'orange' ? 'bg-orange-100 text-orange-600' : ''}
                             ${feature.color === 'blue' ? 'bg-blue-100 text-blue-600' : ''}
                             ${feature.color === 'green' ? 'bg-green-100 text-green-600' : ''}
@@ -126,7 +128,7 @@ const Dashboard = ({ showAds = false, show = true }) => {
           </main>
 
           {showAds && (
-            <aside className="hidden lg:block w-80 flex-shrink-0">
+            <aside className="hidden lg:block w-80 shrink-0">
               <AdsPanel />
             </aside>
           )}

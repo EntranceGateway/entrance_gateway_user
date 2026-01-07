@@ -83,11 +83,11 @@ const BlogDetails = () => {
           <div className="max-w-4xl mx-auto px-4 mb-12">
             <div className="relative h-[400px] md:h-[500px] w-full overflow-hidden rounded-3xl shadow-2xl">
               <img
-                src={`http://185.177.116.173:8080/uploads/${blog.imageName}`}
+                src={`https://api.entrancegateway.com/api/v1/blogs/getBlogFile/${blog.blogId}`}
                 alt={blog.title}
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent"></div>
             </div>
           </div>
         )}
@@ -111,7 +111,7 @@ const BlogDetails = () => {
           {/* --- Contact / Author Card --- */}
           {(blog.contactEmail || blog.contactPhone) && (
             <div className="mt-16 border-t border-gray-100 dark:border-gray-800 pt-10">
-              <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 border border-orange-100 dark:border-gray-700 shadow-md">
+              <div className="bg-linear-to-r from-orange-50 to-orange-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 border border-orange-100 dark:border-gray-700 shadow-md">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                   About the Author
                 </h3>

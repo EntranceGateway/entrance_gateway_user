@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getCourses } from '../../http/course';
 
 // Static data
 export const UNIVERSITIES = [
@@ -44,11 +45,11 @@ const UniversalFilter = ({
   useEffect(() => {
     const fetchCourseNames = async () => {
       try {
-        const response = await fetch('http://185.177.116.173:8080/api/v1/courses');
-        const data = await response.json();
-        const courses = data?.data?.content || [];
+       const courses = await getCourses();
+
         const uniqueNames = [...new Set(courses.map((c) => c.courseName).filter(Boolean))].sort();
         setCourseNames(uniqueNames);
+        
       } catch (err) {
         console.error('Failed to fetch courses:', err);
       }

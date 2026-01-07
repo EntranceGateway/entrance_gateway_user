@@ -9,7 +9,7 @@ const BlogCard = ({ blog }) => {
       className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden"
     >
       <img
-        src={`http://185.177.116.173:8080/uploads/${blog.imageName}`}
+        src={`https://api.entrancegateway.com/api/v1/blogs/getBlogFile/${blog.blogId}`}
         alt={blog.title}
         className="h-48 w-full object-cover"
         onError={(e) => {

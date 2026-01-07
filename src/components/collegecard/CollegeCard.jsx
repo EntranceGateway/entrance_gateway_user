@@ -23,7 +23,7 @@ const CollegeCard = ({ college }) => {
           onError={(e) => (e.target.src = '/placeholder-college.jpg')} // fallback
         />
       ) : (
-        <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+        <div className="w-full h-48 bg-linear-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
           <span className="text-2xl font-bold text-indigo-600">{college.collegeName.charAt(0)}</span>
         </div>
       )}

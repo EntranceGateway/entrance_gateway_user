@@ -18,6 +18,8 @@ import CollegeDetailPage from "./pages/Colleges/collegesDetail";
 import CollegesPage from "./pages/Colleges/CollegePages";
 import Blogs from "./pages/blogs/BlogPage";
 import BlogDetails from "./pages/blogs/BlogDetails";
+import AddNotice from "./pages/notice/addNotice";
+import NoticeDetails from "./pages/notice/noticeDetails";
 
 function App() {
 
@@ -35,13 +37,15 @@ function App() {
 <Route path="/note/:id" element={<NoteDetails />} />
 <Route path="/courses" element={<CoursesPage />} />
       <Route path="/courses/:id" element={<CourseDetails />} />
-      <Route path="/notepages" element={<NotesPage />} />
+      <Route path="/notes" element={<NotesPage />} />
       <Route path="/syllabus" element={<SyllabusPage />} />
             <Route path="/syllabus/:id" element={<SyllabusDetails/>} />
 <Route path="/colleges" element={<CollegesPage />} />
 <Route path="/colleges/:id" element={<CollegeDetailPage />} />
  <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogDetails />} />
+        <Route path="/notices" element={<AddNotice />} />
+        <Route path="/notices/:id" element={<NoticeDetails />} />
       </Routes>
     </BrowserRouter>
         </Provider>

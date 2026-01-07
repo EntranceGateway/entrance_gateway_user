@@ -20,6 +20,7 @@ import {
 import { fetchPdfBlob, fetchRelatedNotes, fetchNoteDetails } from "../../http/notes"; 
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import PdfViewer from "../../components/common/pdf/PdfViewer";
+import api from "../../http";
 
 // Configure PDF Worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -329,7 +330,7 @@ const NoteDetails = () => {
             noteId={id}
             token={authToken}
             fetchPdfBlob={fetchPdfBlob}
-            suburl="http://185.177.116.173:8080/api/v1/notes/getNotefile"
+            suburl="/api/v1/notes/getNoteFile"
           />
         </div>
       </section>

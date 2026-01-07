@@ -13,7 +13,7 @@ export default function SyllabusCard({ syllabus }) {
       <div className="p-5">
         {/* Header: Icon + Title + Course Info */}
         <div className="flex items-start gap-4 mb-4">
-          <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl 
+          <div className="p-3 bg-linear-to-br from-blue-100 to-blue-50 rounded-xl 
                           group-hover:scale-110 transition-transform duration-300">
             <FileText className="w-6 h-6 text-blue-600" />
           </div>
@@ -46,7 +46,7 @@ export default function SyllabusCard({ syllabus }) {
       </div>
 
       {/* Animated Bottom Gradient Bar */}
-      <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 
+      <div className="h-1 bg-linear-to-r from-blue-500 to-indigo-600 opacity-0 
                       group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );

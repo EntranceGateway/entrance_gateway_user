@@ -1,122 +1,238 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
- * Pagination Component
+ * Universal Pagination Component
+ * 
+ * A reusable, beautifully designed pagination component with Framer Motion animations
+ * and Tailwind styling that matches modern UI/UX patterns.
  * 
  * Props:
- * - page: current page number
+ * - currentPage: current page number (1-indexed)
  * - totalPages: total number of pages
- * - onPageChange: callback when page changes
- * - className: optional extra classes
- * - labels: { prev: string, next: string }
- * - showNumbers: boolean to show page numbers
- * - fetchPage: optional async function to fetch data for a page (used in binary search)
+ * - onPageChange: callback when page changes (receives new page number)
+ * - isLoading: optional loading state to disable pagination
+ * - maxVisible: max page numbers to show (default: 5)
+ * - className: optional additional classes
+ * - showPageInfo: show "Page X of Y" text (default: true)
+ * 
+ * Example:
+ * <Pagination 
+ *   currentPage={page} 
+ *   totalPages={totalPages} 
+ *   onPageChange={setPage}
+ *   isLoading={loading}
+ * />
  */
 const Pagination = ({
-  page,
-  totalPages,
+  currentPage = 1,
+  totalPages = 1,
   onPageChange,
+  isLoading = false,
+  maxVisible = 5,
   className = "",
-  labels = { prev: "Prev", next: "Next" },
-  showNumbers = true,
-  fetchPage, // optional backend fetch function
+  showPageInfo = true,
 }) => {
-  const [jumpPage, setJumpPage] = useState("");
+  const [inputValue, setInputValue] = useState("");
 
-  const handlePrev = () => {
-    if (page > 1) onPageChange(page - 1);
-  };
-
-  const handleNext = () => {
-    if (page < totalPages) onPageChange(page + 1);
-  };
-
-  const handleJump = () => {
-    const target = Number(jumpPage);
-    if (!isNaN(target) && target >= 1 && target <= totalPages) {
-      onPageChange(target);
-    }
-  };
-
-  /**
-   * Example binary search helper:
-   * Finds which page contains a specific itemId using fetchPage.
-   */
-  const findItemPage = async (itemId) => {
-    if (!fetchPage) {
-      console.warn("fetchPage function not provided");
-      return;
-    }
-    let left = 1,
-      right = totalPages;
-    while (left <= right) {
-      const mid = Math.floor((left + right) / 2);
-      const items = await fetchPage(mid); // fetch items of page `mid`
-      if (items.some((item) => item.id === itemId)) {
-        onPageChange(mid);
-        return mid;
+  // Generate page numbers with ellipsis
+  const pageNumbers = useMemo(() => {
+    const pages = [];
+    
+    if (totalPages <= maxVisible) {
+      // Show all pages if total is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
       }
-      if (itemId < items[0].id) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      // Calculate range around current page
+      const halfVisible = Math.floor(maxVisible / 2);
+      let start = Math.max(2, currentPage - halfVisible);
+      let end = Math.min(totalPages - 1, currentPage + halfVisible);
+
+      // Adjust range to maintain maxVisible count
+      if (end - start < maxVisible - 3) {
+        if (start === 2) {
+          end = Math.min(totalPages - 1, start + maxVisible - 3);
+        } else {
+          start = Math.max(2, end - maxVisible + 3);
+        }
       }
+
+      // Add ellipsis and range
+      if (start > 2) pages.push("...");
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      if (end < totalPages - 1) pages.push("...");
+
+      // Always show last page
+      pages.push(totalPages);
     }
-    return -1; // not found
+
+    return pages;
+  }, [currentPage, totalPages, maxVisible]);
+
+  const handlePageClick = (page) => {
+    if (!isLoading && page !== currentPage && typeof page === "number") {
+      onPageChange(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
+
+  const handleJumpToPage = () => {
+    const page = parseInt(inputValue);
+    if (!isNaN(page) && page >= 1 && page <= totalPages) {
+      handlePageClick(page);
+      setInputValue("");
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleJumpToPage();
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
+    tap: { scale: 0.95 },
+  };
+
+  if (totalPages <= 1) return null;
 
   return (
-    <nav
-      className={`flex flex-wrap items-center justify-center gap-2 mt-6 ${className}`}
-      aria-label="Pagination"
+    <motion.nav
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={`flex flex-col gap-4 items-center justify-center mt-8 ${className}`}
+      aria-label="Pagination Navigation"
     >
-      {/* Prev button */}
-      <button
-        onClick={handlePrev}
-        disabled={page === 1}
-        className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {labels.prev}
-      </button>
-
-      {/* Page numbers */}
-      {showNumbers && (
-        <span
-          className="px-3 py-1.5 rounded-md border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-900"
-          aria-current="page"
+      {/* Page Info */}
+      {showPageInfo && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="text-sm font-medium text-gray-600"
         >
-          {page} / {totalPages || 1}
-        </span>
+          Page <span className="font-bold text-blue-600">{currentPage}</span> of{" "}
+          <span className="font-bold text-gray-900">{totalPages}</span>
+        </motion.div>
       )}
 
-      {/* Next button */}
-      <button
-        onClick={handleNext}
-        disabled={page === totalPages}
-        className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {labels.next}
-      </button>
-
-      {/* Jump to page */}
-      <div className="flex items-center gap-2 ml-4">
-        <input
-          type="number"
-          min="1"
-          max={totalPages}
-          value={jumpPage}
-          onChange={(e) => setJumpPage(e.target.value)}
-          className="w-16 px-2 py-1 border border-gray-300 rounded-md text-sm"
-          placeholder="Page"
-        />
-        <button
-          onClick={handleJump}
-          className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+      {/* Pagination Controls */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {/* Previous Button */}
+        <motion.button
+          variants={buttonVariants}
+          whileHover={!isLoading && currentPage > 1 ? "hover" : {}}
+          whileTap={!isLoading && currentPage > 1 ? "tap" : {}}
+          onClick={() => handlePageClick(currentPage - 1)}
+          disabled={isLoading || currentPage === 1}
+          className="p-2 rounded-lg border-2 border-blue-300 bg-white text-blue-600 font-semibold hover:bg-blue-50 hover:border-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          aria-label="Previous Page"
         >
-          Go
-        </button>
+          <ChevronLeft size={20} />
+        </motion.button>
+
+        {/* Page Numbers */}
+        <div className="flex gap-1">
+          {pageNumbers.map((page, idx) => {
+            if (page === "...") {
+              return (
+                <motion.span
+                  key={`ellipsis-${idx}`}
+                  className="px-3 py-2 text-gray-400 font-semibold"
+                >
+                  …
+                </motion.span>
+              );
+            }
+
+            const isActive = page === currentPage;
+            return (
+              <motion.button
+                key={page}
+                variants={buttonVariants}
+                whileHover={!isLoading && page !== currentPage ? "hover" : {}}
+                whileTap={!isLoading ? "tap" : {}}
+                onClick={() => handlePageClick(page)}
+                disabled={isLoading}
+                className={`px-3 py-2 rounded-lg font-semibold transition-all min-w-10 ${
+                  isActive
+                    ? "bg-linear-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
+                    : "border-2 border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed"
+                }`}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={`Page ${page}`}
+              >
+                {page}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Next Button */}
+        <motion.button
+          variants={buttonVariants}
+          whileHover={!isLoading && currentPage < totalPages ? "hover" : {}}
+          whileTap={!isLoading && currentPage < totalPages ? "tap" : {}}
+          onClick={() => handlePageClick(currentPage + 1)}
+          disabled={isLoading || currentPage === totalPages}
+          className="p-2 rounded-lg border-2 border-blue-300 bg-white text-blue-600 font-semibold hover:bg-blue-50 hover:border-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          aria-label="Next Page"
+        >
+          <ChevronRight size={20} />
+        </motion.button>
       </div>
-    </nav>
+
+      {/* Jump to Page Input */}
+      {totalPages > 10 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 mt-2"
+        >
+          <label className="text-sm font-medium text-gray-600">Jump to:</label>
+          <input
+            type="number"
+            min="1"
+            max={totalPages}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isLoading}
+            placeholder="Page #"
+            className="w-20 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:opacity-50"
+          />
+          <motion.button
+            whileHover={!isLoading ? { scale: 1.05 } : {}}
+            whileTap={!isLoading ? { scale: 0.95 } : {}}
+            onClick={handleJumpToPage}
+            disabled={isLoading || !inputValue}
+            className="px-4 py-2 bg-linear-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Go
+          </motion.button>
+        </motion.div>
+      )}
+    </motion.nav>
   );
 };
 

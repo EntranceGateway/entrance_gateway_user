@@ -142,7 +142,7 @@ export default function CoursesPage() {
               {totalPages > 1 && (
                 <div className="mt-12 flex justify-center">
                   <Pagination
-                    page={page}
+                    currentPage={page}
                     totalPages={totalPages}
                     onPageChange={setPage}
                   />

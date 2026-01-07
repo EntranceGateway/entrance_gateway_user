@@ -1,6 +1,7 @@
 // src/pages/CollegeDetailPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import api from "../../api"; // adjust path if needed
 
 const CollegeDetailPage = () => {
   const { id } = useParams();
@@ -8,25 +9,40 @@ const CollegeDetailPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://185.177.116.173:8080/api/v1/colleges/${id}`)
-      .then(res => res.json())
-      .then(data => setCollege(data.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchCollege = async () => {
+      try {
+        const res = await api.get(`/api/v1/colleges/${id}`);
+        setCollege(res.data.data);
+      } catch (err) {
+        console.error(err);
+        setCollege(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCollege();
   }, [id]);
 
   if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!college) return <div className="p-8 text-center text-red-600">College not found</div>;
+  if (!college)
+    return (
+      <div className="p-8 text-center text-red-600">
+        College not found
+      </div>
+    );
 
   return (
     <div className="max-w-4xl mx-auto p-8">
       <Link to="/colleges" className="text-blue-600 hover:underline mb-6 inline-block">
         ← Back to Colleges
       </Link>
-      <h1 className="text-4xl font-bold mb-4">{college.collegeName}</h1>
-      {/* Add more details here */}
+
+      <h1 className="text-4xl font-bold mb-4">
+        {college.collegeName}
+      </h1>
+
       <p>{college.address}</p>
-      {/* Display courses, contact, images, etc. */}
     </div>
   );
 };

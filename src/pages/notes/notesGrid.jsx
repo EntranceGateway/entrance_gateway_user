@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getNotesByCourse } from "../../http/notes";
 import { ArrowLeft, AlertCircle } from "lucide-react";
+import Pagination from "../../components/Pagination/pagination";
 
 import NoteCard from "../../components/common/NoteCard/NoteCard";
 import NotesSkeleton from "../../components/common/NoteCard/NotesSkeleton";
 import EmptyState from "../../components/common/NoteCard/EmptyState";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+
+const PAGE_SIZE = 12;
 
 export default function NotesGrid() {
   const { course, sem } = useParams();
@@ -14,6 +17,7 @@ export default function NotesGrid() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -30,6 +34,17 @@ export default function NotesGrid() {
 
     if (course && sem) fetchNotes();
   }, [course, sem]);
+
+  const totalPages = useMemo(() => Math.ceil(notes.length / PAGE_SIZE), [notes.length]);
+  const paginated = useMemo(
+    () => notes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [notes, currentPage]
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Correctly handle the note ID
   const handleCardClick = (note) => {
@@ -97,16 +112,27 @@ export default function NotesGrid() {
           ) : notes.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {notes.map((note, index) => (
-                <NoteCard
-                  key={note.id || note._id || note.noteId || index}
-                  note={note}
-                  index={index}
-                  onClick={() => handleCardClick(note)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {paginated.map((note, index) => (
+                  <NoteCard
+                    key={note.id || note._id || note.noteId || index}
+                    note={note}
+                    index={index}
+                    onClick={() => handleCardClick(note)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                isLoading={loading}
+                showPageInfo={true}
+              />
+            </>
           )}
         </div>
       </div>

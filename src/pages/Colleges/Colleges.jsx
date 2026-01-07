@@ -98,7 +98,7 @@ function CollegeCard({ college, defaultImage }) {
         />
         
         {/* Gradient Overlay (for text contrast if needed, subtly added) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Affiliation Badge (Floating) */}
         <div className="absolute top-4 right-4">
@@ -110,7 +110,7 @@ function CollegeCard({ college, defaultImage }) {
       </div>
 
       {/* --- CONTENT SECTION --- */}
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col grow">
         <h3 className="text-xl font-bold text-slate-900 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
           {college.collegeName}
         </h3>
@@ -153,7 +153,7 @@ function SkeletonCard() {
       <div className="h-56 bg-slate-200 w-full" />
       
       {/* Content Placeholder */}
-      <div className="p-6 flex-grow">
+      <div className="p-6 grow">
         <div className="h-7 bg-slate-200 rounded w-3/4 mb-4" />
         <div className="h-4 bg-slate-200 rounded w-1/2 mb-6" />
         <div className="w-full h-px bg-slate-100 mb-6" />
