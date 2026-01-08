@@ -25,6 +25,7 @@ import NoticeDetails from "./pages/notice/noticeDetails";
 import BlogP from "./components/Pagination/hh";
 import ContactPage from "./pages/Contact/contactPage";
 import ChangePassword from "./pages/Password/changePassword";
+import ForgotPassword from "./pages/Password/ForgotPassword";
 import Login from "./pages/Register/Userlogin";
 
 /**
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<StepRegister />} />
         <Route path="/verify-otp" element={<StepOTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         
         {/* Protected Routes */}
         <Route path="/" element={<Dashboard />} />

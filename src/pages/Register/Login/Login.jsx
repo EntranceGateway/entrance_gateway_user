@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Form = ({ role = "user", type, onSubmit, user,error  }) => {
   const [data, setData] = useState({
@@ -80,7 +81,7 @@ const Form = ({ role = "user", type, onSubmit, user,error  }) => {
                 />
                 Remember me
               </label>
-              <a href="/forgot" className="text-indigo-600 hover:underline">Forgot password?</a>
+              <Link to="/forgot-password" className="text-indigo-600 hover:underline">Forgot password?</Link>
             </div>
             <button
               type="submit"
