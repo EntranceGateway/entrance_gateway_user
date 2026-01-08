@@ -5,7 +5,7 @@ import api from "./index"; // Axios instance
 // ===============================
 export const addSyllabus = async (formData, token) => {
   try {
-    return await api.post("/api/v1/syllabus", formData, {
+    return await api.post("/syllabus", formData, {
       headers: {
         Authorization: `Bearer ${token}`,
         // ❌ Don't manually set Content-Type for FormData
@@ -21,7 +21,7 @@ export const addSyllabus = async (formData, token) => {
 // ===============================
 export const getSyllabus = async (params = {}, token) => {
   try {
-    return await api.get("/api/v1/syllabus", {
+    return await api.get("/syllabus", {
       params,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -35,7 +35,7 @@ export const getSyllabus = async (params = {}, token) => {
 // ===============================
 export const getSyllabusById = async (id, token) => {
   try {
-    return await api.get(`/api/v1/syllabus/${id}`, {
+    return await api.get(`/syllabus/${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch (err) {
@@ -50,7 +50,7 @@ export const getSyllabusById = async (id, token) => {
 // Get syllabus file (PDF)
 export const getSyllabusFile = async (syllabusId, token) => {
   try {
-    return await api.get(`/api/v1/syllabus/getSyllabusFile/${syllabusId}`, {
+    return await api.get(`/syllabus/getSyllabusFile/${syllabusId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       responseType: "blob", // PDF blob
     });
@@ -66,7 +66,7 @@ export const updateSyllabus = async (id, data, token) => {
   try {
     // If data is FormData → PUT /file endpoint
     if (data instanceof FormData) {
-      return await api.put(`/api/v1/syllabus/${id}/file`, data, {
+      return await api.put(`/syllabus/${id}/file`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -74,7 +74,7 @@ export const updateSyllabus = async (id, data, token) => {
     }
 
     // Otherwise → JSON PUT
-    return await api.put(`/api/v1/syllabus/${id}`, data, {
+    return await api.put(`/syllabus/${id}`, data, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -90,7 +90,7 @@ export const updateSyllabus = async (id, data, token) => {
 // ===============================
 export const deleteSyllabus = async (id, token) => {
   try {
-    return await api.delete(`/api/v1/syllabus/${id}`, {
+    return await api.delete(`/syllabus/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

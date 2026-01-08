@@ -3,7 +3,7 @@ import api from "./index";
 
 export const verifyOtp = async (email, otp) => {
   try {
-    const response = await api.post("/api/v1/auth/user/verify-otp", {
+    const response = await api.post("/auth/user/verify-otp", {
       email,
       otp,
     });
@@ -16,7 +16,7 @@ export const verifyOtp = async (email, otp) => {
 
 export const reSend = async (email) => {
   try {
-    const response = await api.post("/api/v1/auth/user/verify-otp", {
+    const response = await api.post("/auth/user/verify-otp", {
       email
     });
     return response.data; // Only return the data from server

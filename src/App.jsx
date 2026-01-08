@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { Provider } from "react-redux";
 
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Register/userlogin";
 import StepRegister from "./pages/Register/Register";
 import store from "../store/store";
 import StepOTP from "./pages/Register/StepOTP";
@@ -24,6 +23,9 @@ import BlogDetails from "./pages/blogs/BlogDetails";
 import AddNotice from "./pages/notice/addNotice";
 import NoticeDetails from "./pages/notice/noticeDetails";
 import BlogP from "./components/Pagination/hh";
+import ContactPage from "./pages/Contact/contactPage";
+import ChangePassword from "./pages/Password/changePassword";
+import Login from "./pages/Register/Userlogin";
 
 /**
  * AuthInitializer - Restores user session on page load/refresh
@@ -92,6 +94,8 @@ function AppRoutes() {
         <Route path="/blogs/:id" element={<BlogDetails />} />
         <Route path="/notices" element={<AddNotice />} />
         <Route path="/notices/:id" element={<NoticeDetails />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/blogp" element={<BlogP />} />
       </Routes>
     </AuthInitializer>

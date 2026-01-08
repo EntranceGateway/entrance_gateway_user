@@ -14,7 +14,7 @@ import {
   BookOpen,
   FileText,
   NotebookPen,
-  ScrollText,
+  ScrollText,Key 
 } from "lucide-react";
 import useUserAuth from "../../hooks/useUserAuth";
 
@@ -203,12 +203,12 @@ const Navbar = () => {
                         Profile
                       </Link>
                       <Link
-                        to="/settings"
+                        to="/change-password"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                       >
-                        <Settings size={16} />
-                        Settings
+                        <Key size={16} />
+                        Change Password
                       </Link>
                       <div className="h-px bg-gray-200 mx-3 my-1" />
                       <button

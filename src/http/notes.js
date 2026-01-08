@@ -8,7 +8,7 @@ export const getNotesByCourse = async (courseName, semester, token) => {
 
   try {
     const response = await api.get(
-      `/api/v1/notes/getNotesBy/${courseName}/${semester}`,
+      `/notes/getNotesBy/${courseName}/${semester}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -31,7 +31,7 @@ export const getNoteById = async (id, token) => {
   if (!id) throw new Error("Note ID is missing");
 
   try {
-    const res = await api.get(`/api/v1/notes/${id}`, {
+    const res = await api.get(`/notes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
@@ -49,7 +49,7 @@ export const fetchNoteDetails = async (id, token) => {
   if (!id) throw new Error("Note ID is missing");
 
   try {
-    const res = await api.get(`/api/v1/notes/${id}`, {
+    const res = await api.get(`/notes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
@@ -68,7 +68,7 @@ export const fetchRelatedNotes = async (id, token) => {
   if (!id) throw new Error("Note ID is missing");
 
   try {
-    const res = await api.get(`/api/v1/notes/${id}`, {
+    const res = await api.get(`/notes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;

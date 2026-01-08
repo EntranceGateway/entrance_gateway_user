@@ -330,7 +330,7 @@ const SyllabusDetails = () => {
             noteId={id}
             token={authToken}
             fetchPdfBlob={fetchPdfBlob}
-            suburl="/api/v1/syllabus/getSyllabusFile"
+            suburl="/syllabus/getSyllabusFile"
           />
         </div>
       </section>

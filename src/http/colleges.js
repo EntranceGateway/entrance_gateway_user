@@ -2,9 +2,7 @@ import axios from "axios";
 import { DEFAULT_PAGE_SIZE, uiToServerPage } from "../constants/pagination";
 
 // Colleges API uses a different base URL
-const collegesApi = axios.create({
-  baseURL: "http://185.177.116.173:8080",
-});
+import api from "./index";
 
 // Attach token automatically
 collegesApi.interceptors.request.use((config) => {
@@ -23,7 +21,7 @@ collegesApi.interceptors.request.use((config) => {
  * @returns {Promise<{items: Array, page: Object}>}
  */
 export const getColleges = async ({ page = 1, size = DEFAULT_PAGE_SIZE } = {}) => {
-  const res = await collegesApi.get("/api/v1/colleges", {
+  const res = await api.get("/colleges", {
     params: {
       page: uiToServerPage(page),
       size,
@@ -46,7 +44,7 @@ export const getColleges = async ({ page = 1, size = DEFAULT_PAGE_SIZE } = {}) =
  * @returns {Promise<{items: Array, page: Object}>}
  */
 export const searchColleges = async ({ name, page = 1, size = DEFAULT_PAGE_SIZE }) => {
-  const res = await collegesApi.get("/api/v1/colleges/search", {
+  const res = await api.get("/colleges/search", {
     params: {
       name,
       page: uiToServerPage(page),
@@ -68,6 +66,6 @@ export const searchColleges = async ({ name, page = 1, size = DEFAULT_PAGE_SIZE 
  */
 export const getCollegeById = async (id) => {
   if (!id) throw new Error("College ID is required");
-  const res = await collegesApi.get(`/api/v1/colleges/${id}`);
+  const res = await api.get(`/colleges/${id}`);
   return res.data?.data || null;
 };

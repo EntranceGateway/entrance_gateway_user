@@ -39,7 +39,7 @@ export default function SyllabusPage() {
       semesters.forEach((sem) => params.append("semester", sem));
       affiliations.forEach((aff) => params.append("affiliation", aff));
 
-      const res = await api.get("/api/v1/syllabus/by-affiliation/by-course/semester", { params });
+      const res = await api.get("/syllabus/by-affiliation/by-course/semester", { params });
       setSyllabi(res.data?.data?.content || []);
     } catch (err) {
       console.error("Failed to fetch syllabus:", err);

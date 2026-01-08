@@ -25,8 +25,8 @@ export const getSingle = async (url, token) => {
 
 };
 
-const noteFile="/api/v1/notes/getNotefile"
-const syllabusFile="/api/v1/syllabus/getSyllabusFile"
+const noteFile="/notes/getNotefile"
+const syllabusFile="/syllabus/getSyllabusFile"
 
 export {
     noteFile,

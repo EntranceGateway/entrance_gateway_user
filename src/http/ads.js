@@ -685,7 +685,7 @@ const PRIORITY_ORDER = {
 
 export const getAds = async () => {
   try {
-    const response = await api.get("/api/v1/ads");
+    const response = await api.get("/ads");
     const data = response.data?.data || [];
     if (data.length > 0) {
       return data.filter((ad) => ad.isActive !== false);
