@@ -6,7 +6,7 @@ import api from "./index";
 // { message: string, data: { content: Notice[], ...pagination } }
 // --------------------------------------
 export const getNotices = async (params = {}) => {
-  const res = await api.get("/api/v1/notices", { params });
+  const res = await api.get("/notices", { params });
   return {
     content: res.data?.data?.content || [],
     page: res.data?.data || {},
@@ -19,7 +19,7 @@ export const getNotices = async (params = {}) => {
 // --------------------------------------
 export const getNoticeById = async (id) => {
   if (!id) throw new Error("Notice ID is missing");
-  const res = await api.get(`/api/v1/notices/${id}`);
+  const res = await api.get(`/notices/${id}`);
   return res.data;
 };
 
@@ -30,7 +30,7 @@ export const getNoticeById = async (id) => {
 export const getNoticeFile = async (noticeId) => {
   if (!noticeId) throw new Error("Notice ID is missing");
   try {
-    const res = await api.get(`/api/v1/notices/getNoticeFile/${noticeId}`, {
+    const res = await api.get(`/notices/getNoticeFile/${noticeId}`, {
       responseType: "blob",
     });
     return res.data; // Blob object

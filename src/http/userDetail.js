@@ -3,7 +3,7 @@ import api from "./index";
 
 export const getUserDetail = async () => {
   try {
-    const res = await api.get("/user/getUserDetails");
+    const res = await api.get("/user/me");
 
     const userData = res.data?.data;
 
@@ -24,6 +24,7 @@ export const getUserDetail = async () => {
 // src/api/auth.api.js
 
 export const getUserDetails = async () => {
-  const res = await api.get("/api/v1/user/getUserDetails");
+  const res = await api.get("/user/me");
   return res.data.data;
 };
+
