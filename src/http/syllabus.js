@@ -99,3 +99,29 @@ export const deleteSyllabus = async (id, token) => {
     throw err.response?.data || err;
   }
 };
+
+// ===============================
+// GET SYLLABUS BY FILTERS
+// ===============================
+export const getSyllabusByFilters = async ({ courseNames, semesters, affiliations }) => {
+  if (!courseNames?.length || !semesters?.length || !affiliations?.length) {
+    return { items: [], total: 0 };
+  }
+
+  try {
+    const params = new URLSearchParams();
+    courseNames.forEach(name => params.append("courseName", name));
+    semesters.forEach(sem => params.append("semester", sem));
+    affiliations.forEach(aff => params.append("affiliation", aff));
+
+    const response = await api.get("/syllabus/by-affiliation/by-course/semester", { params });
+    const content = response.data?.data?.content || [];
+    
+    return {
+      items: content,
+      total: content.length,
+    };
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+};

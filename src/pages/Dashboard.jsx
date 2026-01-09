@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Users, Trophy, ArrowRight, Star, TrendingUp, CheckCircle } from 'lucide-react';
 import AdCard from "../components/common/Adcard/Adcard";
@@ -24,6 +24,21 @@ const stats = [
 const Dashboard = ({ showAds = false, show = true }) => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const heroRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Track mouse movement within hero section
+  const handleMouseMove = (e) => {
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
+    setMousePosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setMousePosition({ x: 0, y: 0 });
+  };
 
   // Fetch ads on mount
   useEffect(() => {
@@ -62,16 +77,76 @@ const Dashboard = ({ showAds = false, show = true }) => {
             
             {/* Hero Section - New Professional Design */}
             <motion.section
+              ref={heroRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
               className="relative bg-linear-to-br from-orange-600 via-orange-500 to-amber-500 rounded-3xl overflow-hidden mb-12 -mx-6 md:-mx-8 -mt-6 md:-mt-8"
             >
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-                <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
-                <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+              {/* Interactive Background Bubbles */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <motion.div
+                  className="absolute w-72 h-72 bg-white rounded-full"
+                  style={{
+                    top: '-10%',
+                    left: '-5%',
+                  }}
+                  animate={{
+                    x: mousePosition.x * 40,
+                    y: mousePosition.y * 40,
+                  }}
+                  transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+                />
+                <motion.div
+                  className="absolute w-96 h-96 bg-white rounded-full"
+                  style={{
+                    bottom: '-15%',
+                    right: '-10%',
+                  }}
+                  animate={{
+                    x: mousePosition.x * -60,
+                    y: mousePosition.y * -60,
+                  }}
+                  transition={{ type: 'spring', stiffness: 40, damping: 25 }}
+                />
+                <motion.div
+                  className="absolute w-64 h-64 bg-white rounded-full"
+                  style={{
+                    top: '40%',
+                    left: '45%',
+                  }}
+                  animate={{
+                    x: mousePosition.x * 30,
+                    y: mousePosition.y * 30,
+                  }}
+                  transition={{ type: 'spring', stiffness: 60, damping: 15 }}
+                />
+                <motion.div
+                  className="absolute w-48 h-48 bg-white rounded-full"
+                  style={{
+                    top: '20%',
+                    right: '20%',
+                  }}
+                  animate={{
+                    x: mousePosition.x * -50,
+                    y: mousePosition.y * 50,
+                  }}
+                  transition={{ type: 'spring', stiffness: 45, damping: 20 }}
+                />
+                <motion.div
+                  className="absolute w-32 h-32 bg-white rounded-full"
+                  style={{
+                    bottom: '30%',
+                    left: '15%',
+                  }}
+                  animate={{
+                    x: mousePosition.x * 70,
+                    y: mousePosition.y * -40,
+                  }}
+                  transition={{ type: 'spring', stiffness: 55, damping: 18 }}
+                />
               </div>
 
               <div className="relative z-10 px-6 md:px-12 py-16 md:py-20">

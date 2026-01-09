@@ -16,7 +16,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../http";
+import { requestPasswordReset, resetPassword } from "../../http/userApi";
 
 // Password strength checker
 const getPasswordStrength = (password) => {
@@ -145,20 +145,18 @@ const ForgotPassword = () => {
     setStatus({ type: null, message: "" });
 
     try {
-      const response = await api.post("/user/forgot-password", { email });
+      const response = await requestPasswordReset(email);
 
-      if (response.status === 200) {
-        setStep(2);
-        setCountdown(120); // 2 minutes
-        setCanResend(false);
-        setStatus({
-          type: "success",
-          message: response.data?.message || "OTP sent to your email!",
-        });
-      }
+      setStep(2);
+      setCountdown(120); // 2 minutes
+      setCanResend(false);
+      setStatus({
+        type: "success",
+        message: response?.message || "OTP sent to your email!",
+      });
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Failed to send OTP. Please try again.";
+        error.response?.data?.message || error.message || "Failed to send OTP. Please try again.";
 
       if (error.response?.status === 404) {
         setStatus({ type: "error", message: "Email not registered" });
@@ -182,22 +180,20 @@ const ForgotPassword = () => {
     setStatus({ type: null, message: "" });
 
     try {
-      const response = await api.post("/user/forgot-password", { email });
+      await requestPasswordReset(email);
 
-      if (response.status === 200) {
-        setOtp(["", "", "", "", "", ""]);
-        setCountdown(120);
-        setCanResend(false);
-        setStatus({ type: "success", message: "New OTP sent to your email!" });
-        otpRefs.current[0]?.focus();
-      }
+      setOtp(["", "", "", "", "", ""]);
+      setCountdown(120);
+      setCanResend(false);
+      setStatus({ type: "success", message: "New OTP sent to your email!" });
+      otpRefs.current[0]?.focus();
     } catch (error) {
       if (error.response?.status === 429) {
         setStatus({ type: "error", message: "Too many requests. Please wait before trying again." });
       } else {
         setStatus({
           type: "error",
-          message: error.response?.data?.message || "Failed to resend OTP",
+          message: error.response?.data?.message || error.message || "Failed to resend OTP",
         });
       }
     } finally {
@@ -253,23 +249,21 @@ const ForgotPassword = () => {
     setStatus({ type: null, message: "" });
 
     try {
-      const response = await api.post("/user/reset-password", {
+      const response = await resetPassword({
         email,
         otp: verifiedOtp,
         newPassword,
-        confirmPassword,
+        confirmNewPassword: confirmPassword,
       });
 
-      if (response.status === 200) {
-        setStep(4);
-        setStatus({
-          type: "success",
-          message: response.data?.message || "Password reset successfully!",
-        });
-      }
+      setStep(4);
+      setStatus({
+        type: "success",
+        message: response?.message || "Password reset successfully!",
+      });
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Failed to reset password. Please try again.";
+        error.response?.data?.message || error.message || "Failed to reset password. Please try again.";
 
       if (error.response?.status === 400) {
         setStatus({ type: "error", message: "Invalid or expired OTP. Please go back and request a new code." });

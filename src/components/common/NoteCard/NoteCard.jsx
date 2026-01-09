@@ -6,31 +6,10 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatCourseName, formatNoteName } from "../../../utils/formatters";
 
 export default function NoteCard({ note }) {
   const navigate = useNavigate();
-
-  /* ---------------- FORMATTERS ---------------- */
-
-  const formatCourseName = (name) => {
-    if (!name) return "";
-    return name
-      .split("_")
-      .slice(1)
-      .join("_")
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-  };
-
-  const formatNoteName = (name) => {
-    if (!name) return "";
-    return name
-      .split("_")
-      .slice(1)
-      .join("_")
-      .replace(/\.pdf$/i, "");
-  };
-
   const noteTitle = formatNoteName(note.noteName);
 
   /* ---------------- COMPONENT ---------------- */

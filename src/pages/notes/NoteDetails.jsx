@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Document, Page, pdfjs } from "react-pdf";
 import {
   Fullscreen,
@@ -20,7 +21,6 @@ import {
 import { fetchPdfBlob, fetchRelatedNotes, fetchNoteDetails } from "../../http/notes"; 
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import PdfViewer from "../../components/common/pdf/PdfViewer";
-import api from "../../http";
 
 // Configure PDF Worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -248,7 +248,7 @@ const SecurePdfViewer = ({ noteId, token, fetchPdfBlob, suburl }) => {
 // --- 4. Main Page Component ---
 const NoteDetails = () => {
   const { id } = useParams();
-  const authToken = localStorage.getItem("token"); 
+  const { accessToken: authToken } = useSelector((state) => state.auth);
   const [relatedNotes, setRelatedNotes] = useState([]);
   const [noteDetails, setNoteDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
@@ -326,12 +326,19 @@ const NoteDetails = () => {
             
       <section className="max-w-6xl mx-auto px-2 mb-10">
         <div className="bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-200">
-          <PdfViewer
-            noteId={id}
-            token={authToken}
-            fetchPdfBlob={fetchPdfBlob}
-            suburl="/api/v1/notes/getNoteFile"
-          />
+          {authToken ? (
+            <PdfViewer
+              noteId={id}
+              token={authToken}
+              fetchPdfBlob={fetchPdfBlob}
+              suburl="/notes"
+              urlSuffix="/file"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-[400px] text-gray-500">
+              <p>Please log in to view this PDF</p>
+            </div>
+          )}
         </div>
       </section>
 

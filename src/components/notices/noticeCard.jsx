@@ -1,20 +1,15 @@
 import React from "react";
 import { Megaphone, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatFileName } from "../../utils/formatters";
 
 // Professional, attractive notice card with modern design
 export default function NoticeCard({ notice }) {
 	const navigate = useNavigate();
 	if (!notice) return null;
 
-	const formatName = (raw) => {
-		if (!raw) return "";
-		const afterUnderscore = raw.includes("_") ? raw.split("_").slice(1).join("_") : raw;
-		return afterUnderscore.replace(/\.(png|jpg|jpeg|pdf|webp)$/i, "").trim();
-	};
-
 	const title = notice.title || "";
-	const name = formatName(notice.name || notice.imageName || "");
+	const name = formatFileName(notice.name || notice.imageName || "");
 
 	return (
 		<article

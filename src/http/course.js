@@ -22,11 +22,28 @@ export const getCourses = async (params = {}) => {
 };
 
 // --------------------------------------
+// Get All Courses Sorted (PUBLIC)
+// --------------------------------------
+export const getCoursesSorted = async (sort = "desc") => {
+  const res = await api.get("/courses", { params: { sort } });
+  const data = res.data?.data || {};
+  return data.content || [];
+};
+
+// --------------------------------------
 // Get Single Course (PUBLIC)
 // --------------------------------------
 export const getSingleCourse = async (id) => {
   const res = await api.get(`/courses/${id}`);
   return res.data?.data || null;
+};
+
+// --------------------------------------
+// Get Course Full Syllabus (PUBLIC)
+// --------------------------------------
+export const getCourseSyllabus = async (id) => {
+  const res = await api.get(`/courses/full-syllabus/${id}`);
+  return res.data?.data?.[0] || null;
 };
 
 // --------------------------------------

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import api from "../../http";
-import { Menu, X,SearchX } from "lucide-react";
+import { getSyllabusByFilters } from "../../http/syllabus";
+import { Menu, X, SearchX } from "lucide-react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import SyllabusCard from "../../components/common/NoteCard/SyllabusCard";
 import Pagination from "../../components/Pagination/pagination";
@@ -26,21 +26,10 @@ export default function SyllabusPage() {
   }, [activeFilters]);
 
   const fetchSyllabus = async () => {
-    const { courseNames, semesters, affiliations } = activeFilters;
-    if (!courseNames.length || !semesters.length || !affiliations.length) {
-      setSyllabi([]);
-      return;
-    }
-
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      courseNames.forEach((name) => params.append("courseName", name));
-      semesters.forEach((sem) => params.append("semester", sem));
-      affiliations.forEach((aff) => params.append("affiliation", aff));
-
-      const res = await api.get("/syllabus/by-affiliation/by-course/semester", { params });
-      setSyllabi(res.data?.data?.content || []);
+      const { items } = await getSyllabusByFilters(activeFilters);
+      setSyllabi(items);
     } catch (err) {
       console.error("Failed to fetch syllabus:", err);
       setSyllabi([]);

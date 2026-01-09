@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
+import { getSingleCourse, getCourseSyllabus } from '../../../http/course';
 
 const AFFILIATION_LABELS = {
   TRIBHUVAN_UNIVERSITY: 'Tribhuvan University',
@@ -12,8 +13,6 @@ const AFFILIATION_LABELS = {
   FAR_WESTERN_UNIVERSITY: 'Far Western University',
   CAMPUS_AFFILIATED_TO_FOREIGN_UNIVERSITY: 'Foreign Affiliated Campus',
 };
-
-const API_BASE = 'http://185.177.116.173:8080/api/v1';
 
 const DEFAULT_COURSE_BANNER = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070';
 const DEFAULT_COLLEGE_IMAGE = 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=2064';
@@ -33,16 +32,12 @@ const CourseDetailPage = () => {
       try {
         setLoading(true);
 
-        const courseRes = await fetch(`${API_BASE}/courses/${id}`);
-        if (!courseRes.ok) throw new Error('Course not found');
-        const courseJson = await courseRes.json();
-        setCourse(courseJson.data);
+        const courseData = await getSingleCourse(id);
+        if (!courseData) throw new Error('Course not found');
+        setCourse(courseData);
 
-        const syllabusRes = await fetch(`${API_BASE}/courses/full-syllabus/${id}`);
-        if (syllabusRes.ok) {
-          const syllabusJson = await syllabusRes.json();
-          setSyllabus(syllabusJson.data?.[0]);
-        }
+        const syllabusData = await getCourseSyllabus(id);
+        setSyllabus(syllabusData);
       } catch (err) {
         setError(err.message || 'Failed to load course details');
       } finally {

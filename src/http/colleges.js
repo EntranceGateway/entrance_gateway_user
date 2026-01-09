@@ -1,17 +1,5 @@
-import axios from "axios";
 import { DEFAULT_PAGE_SIZE, uiToServerPage } from "../constants/pagination";
-
-// Colleges API uses a different base URL
 import api from "./index";
-
-// Attach token automatically
-collegesApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 /**
  * Get paginated list of colleges
@@ -32,6 +20,8 @@ export const getColleges = async ({ page = 1, size = DEFAULT_PAGE_SIZE } = {}) =
   return {
     items: data.content || [],
     page: data.page || {},
+    totalPages: data.page?.totalPages || 1,
+    totalElements: data.page?.totalElements || 0,
   };
 };
 
@@ -56,6 +46,8 @@ export const searchColleges = async ({ name, page = 1, size = DEFAULT_PAGE_SIZE 
   return {
     items: data.content || [],
     page: data.page || {},
+    totalPages: data.page?.totalPages || 1,
+    totalElements: data.page?.totalElements || 0,
   };
 };
 
@@ -69,3 +61,4 @@ export const getCollegeById = async (id) => {
   const res = await api.get(`/colleges/${id}`);
   return res.data?.data || null;
 };
+

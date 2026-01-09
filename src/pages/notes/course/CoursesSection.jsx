@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom"; // ← Important: Use Link for navigation
-
-const API_BASE = "http://185.177.116.173:8080/api/v1";
+import { Link } from "react-router-dom";
+import { getCoursesSorted } from "../../../http/course";
 
 // Map backend enum keys to display names
 const AFFILIATION_OPTIONS = [
@@ -29,12 +28,7 @@ export default function CoursesSection() {
     const fetchAllCourses = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/courses?sort=desc`);
-        if (!res.ok) throw new Error("Failed to fetch courses");
-
-        const json = await res.json();
-        const data = json?.data?.content || [];
-
+        const data = await getCoursesSorted("desc");
         setAllCourses(data);
         // Initial display: top 3 from Tribhuvan University (descending order)
         const tuCourses = data.filter((course) => course.affiliation === "TRIBHUVAN_UNIVERSITY");

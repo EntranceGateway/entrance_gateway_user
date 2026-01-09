@@ -2,6 +2,31 @@
 import axios from "axios";
 import api from "./index"; // your configured axios instance
 
+// --- Get notes by filters (courseName, semester, affiliation) ---
+export const getNotesByFilters = async ({ courseNames, semesters, affiliations }) => {
+  if (!courseNames?.length || !semesters?.length || !affiliations?.length) {
+    return { items: [], total: 0 };
+  }
+
+  try {
+    const params = new URLSearchParams();
+    courseNames.forEach(name => params.append("courseName", name));
+    semesters.forEach(sem => params.append("semester", sem));
+    affiliations.forEach(aff => params.append("affiliation", aff));
+
+    const response = await api.get("/notes/by-course-semester-affiliation", { params });
+    const content = response.data?.data?.content || [];
+    
+    return {
+      items: content,
+      total: content.length,
+    };
+  } catch (err) {
+    const message = err.response?.data?.message || err.message || "Failed to fetch notes";
+    throw new Error(message);
+  }
+};
+
 // --- Get notes by course and semester ---
 export const getNotesByCourse = async (courseName, semester, token) => {
   if (!token) throw new Error("Authentication token is missing");

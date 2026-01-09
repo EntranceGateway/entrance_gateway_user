@@ -17,6 +17,7 @@ import {
   ScrollText,Key 
 } from "lucide-react";
 import useUserAuth from "../../hooks/useUserAuth";
+import { getInitials } from "../../utils/formatters";
 
 const MAIN_LINKS = [
   { name: "Home", path: "/", icon: Home },
@@ -56,14 +57,6 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const getInitials = (fullName) => {
-    if (!fullName) return "U";
-    const names = fullName.trim().split(" ");
-    const first = names[0]?.[0] || "";
-    const last = names.length > 1 ? names[names.length - 1]?.[0] : "";
-    return (first + last).toUpperCase() || "U";
-  };
 
   return (
     <header className="w-full border-b border-gray-200 bg-white/95 backdrop-blur sticky top-0 z-50 shadow-sm">

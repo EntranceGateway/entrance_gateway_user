@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import api from "../../http";
+import { changePassword as changePasswordApi } from "../../http/userApi";
 
 // Password strength checker
 const getPasswordStrength = (password) => {
@@ -125,28 +125,26 @@ const ChangePassword = () => {
     setStatus({ type: null, message: "" });
 
     try {
-      const response = await api.post("/user/change-password", {
+      const response = await changePasswordApi({
         currentPassword,
         newPassword,
         confirmPassword,
       });
 
-      if (response.status === 200) {
-        setStatus({
-          type: "success",
-          message: response.data?.message || "Password changed successfully!",
-        });
-        // Clear form
-        setFormData({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
-      }
+      setStatus({
+        type: "success",
+        message: response?.message || "Password changed successfully!",
+      });
+      // Clear form
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      // Redirect after 3 seconds
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message ||

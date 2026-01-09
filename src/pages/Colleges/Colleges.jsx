@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, ExternalLink, ArrowRight, Building2 } from "lucide-react";
 import Pagination from "../../components/Pagination/pagination";
-import { uiToServerPage } from "../../constants/pagination";
+import { getColleges } from "../../http/colleges";
 
 export default function Colleges() {
   const [colleges, setColleges] = useState([]);
@@ -15,18 +15,13 @@ export default function Colleges() {
   const DEFAULT_IMAGE = "https://i.pinimg.com/1200x/d1/18/66/d11866060740b0a32b219dc3581caaeb.jpg";
   const PAGE_SIZE = 6;
 
-  const fetchColleges = async (pageNumber = 1) => {
+  const fetchCollegesData = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `http://185.177.116.173:8080/api/v1/colleges?page=${uiToServerPage(pageNumber)}&size=${PAGE_SIZE}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      const payload = data?.data || {};
-      setColleges(payload.content || []);
-      setTotalPages(payload.page?.totalPages || 1);
-      setTotalElements(payload.page?.totalElements || payload.content?.length || 0);
+      const result = await getColleges({ page: pageNumber, size: PAGE_SIZE });
+      setColleges(result.items);
+      setTotalPages(result.totalPages);
+      setTotalElements(result.totalElements);
       setPage(pageNumber);
       setError(false);
     } catch (err) {
@@ -38,13 +33,13 @@ export default function Colleges() {
   };
 
   useEffect(() => {
-    fetchColleges(1);
+    fetchCollegesData(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePageChange = (nextPage) => {
     if (nextPage !== page) {
-      fetchColleges(nextPage);
+      fetchCollegesData(nextPage);
     }
   };
 

@@ -24,7 +24,7 @@ const ViewerButton = ({ icon: Icon, onClick, title, disabled = false, isFullScre
     </button>
 );
 
-const PdfViewer = ({ noteId, token, fetchPdfBlob, suburl }) => {
+const PdfViewer = ({ noteId, token, fetchPdfBlob, suburl, urlSuffix = "" }) => {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [numPages, setNumPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,7 +43,7 @@ const PdfViewer = ({ noteId, token, fetchPdfBlob, suburl }) => {
                 // Revoke previous object URL before fetching a new one
                 if (pdfUrl) URL.revokeObjectURL(pdfUrl); 
 
-                const blob = await fetchPdfBlob(`${suburl}/${noteId}`, token);
+                const blob = await fetchPdfBlob(`${suburl}/${noteId}${urlSuffix}`, token);
                 const newPdfUrl = URL.createObjectURL(blob);
                 setPdfUrl(newPdfUrl);
 
@@ -61,7 +61,7 @@ const PdfViewer = ({ noteId, token, fetchPdfBlob, suburl }) => {
         return () => {
             if (pdfUrl) URL.revokeObjectURL(pdfUrl);
         };
-    }, [noteId, token, fetchPdfBlob, suburl]);
+    }, [noteId, token, fetchPdfBlob, suburl, urlSuffix]);
 
 
     // --- 2. Handle Responsiveness and Page Width ---

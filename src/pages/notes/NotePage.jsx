@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import api from "../../http";
+import { getNotesByFilters } from "../../http/notes";
 import NoteCard from "../../components/common/NoteCard/NoteCard";
 import Pagination from "../../components/Pagination/pagination";
 import { Menu, X } from "lucide-react";
@@ -39,28 +39,10 @@ export default function NotesPage() {
   }, [activeFilters]);
 
   const fetchNotes = async () => {
-    const { courseNames, semesters, affiliations } = activeFilters;
-
-    // If any required filter is empty, show nothing
-    if (!courseNames.length || !semesters.length || !affiliations.length) {
-      setNotes([]);
-      return;
-    }
-
     try {
       setLoading(true);
-
-      // Build query params dynamically for multiple values
-      const params = new URLSearchParams();
-      courseNames.forEach(name => params.append("courseName", name));
-      semesters.forEach(sem => params.append("semester", sem));
-      affiliations.forEach(aff => params.append("affiliation", aff));
-
-      const res = await api.get("/api/v1/notes/getNotesBy/courseName/semester/affiliation", {
-        params,
-      });
-
-      setNotes(res.data?.data?.content || []);
+      const { items } = await getNotesByFilters(activeFilters);
+      setNotes(items);
     } catch (err) {
       console.error("Failed to fetch notes", err);
       setNotes([]);

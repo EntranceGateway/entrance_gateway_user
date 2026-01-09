@@ -65,8 +65,16 @@ const UniversalFilter = ({
     });
   }, [selectedCourses, selectedSemesters, selectedAffiliations, onFilterChange]);
 
-  const toggle = (list, setList, item) => {
-    setList(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+  const toggleCourse = (item) => {
+    setSelectedCourses(prev => prev.includes(item) ? [] : [item]);
+  };
+
+  const toggleSemester = (item) => {
+    setSelectedSemesters(prev => prev.includes(item) ? [] : [item]);
+  };
+
+  const toggleAffiliation = (item) => {
+    setSelectedAffiliations(prev => prev.includes(item) ? [] : [item]);
   };
 
   const filteredCourses = courseNames.filter(name => 
@@ -141,7 +149,7 @@ const UniversalFilter = ({
                     key={name}
                     label={name}
                     checked={selectedCourses.includes(name)}
-                    onChange={() => toggle(selectedCourses, setSelectedCourses, name)}
+                    onChange={() => toggleCourse(name)}
                   />
                 ))
               )}
@@ -166,7 +174,7 @@ const UniversalFilter = ({
                   key={key}
                   label={`${label} Semester`}
                   checked={selectedSemesters.includes(String(key))}
-                  onChange={() => toggle(selectedSemesters, setSelectedSemesters, String(key))}
+                  onChange={() => toggleSemester(String(key))}
                   compact
                 />
               ))}
@@ -191,7 +199,7 @@ const UniversalFilter = ({
                   key={key}
                   label={label}
                   checked={selectedAffiliations.includes(key)}
-                  onChange={() => toggle(selectedAffiliations, setSelectedAffiliations, key)}
+                  onChange={() => toggleAffiliation(key)}
                 />
               ))}
             </div>

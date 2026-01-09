@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import { getCollegeById } from '../../http/colleges';
 
 const AFFILIATION_LABELS = {
   TRIBHUVAN_UNIVERSITY: 'Tribhuvan University',
@@ -37,11 +38,9 @@ const CollegeDetailPage = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`http://185.177.116.173:8080/api/v1/colleges/${id}`);
-        if (!response.ok) throw new Error('College not found');
-
-        const result = await response.json();
-        setCollege(result.data);
+        const collegeData = await getCollegeById(id);
+        if (!collegeData) throw new Error('College not found');
+        setCollege(collegeData);
       } catch (err) {
         setError(err.message || 'Failed to load college details');
       } finally {
