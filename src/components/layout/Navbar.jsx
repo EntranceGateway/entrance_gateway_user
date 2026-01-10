@@ -14,7 +14,9 @@ import {
   BookOpen,
   FileText,
   NotebookPen,
-  ScrollText,Key 
+  ScrollText,
+  Key,
+  FileQuestion
 } from "lucide-react";
 import useUserAuth from "../../hooks/useUserAuth";
 import { getInitials } from "../../utils/formatters";
@@ -25,6 +27,7 @@ const MAIN_LINKS = [
   { name: "Courses", path: "/courses", icon: BookOpen },
   { name: "Blogs", path: "/blogs", icon: FileText },
   { name: "Notes", path: "/notes", icon: NotebookPen },
+  { name: "Old Questions", path: "/old-questions", icon: FileQuestion },
   { name: "Syllabus", path: "/syllabus", icon: ScrollText },
 ];
 

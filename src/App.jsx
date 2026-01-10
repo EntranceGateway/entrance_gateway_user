@@ -28,6 +28,8 @@ import ChangePassword from "./pages/Password/changePassword";
 import ForgotPassword from "./pages/Password/ForgotPassword";
 import Login from "./pages/Register/Userlogin";
 import ProfilePage from "./pages/profile/profilePage";
+import OldQuestionsPage from "./pages/oldQuestions/OldQuestionsPage";
+import OldQuestionDetails from "./pages/oldQuestions/OldQuestionDetails";
 
 /**
  * AuthInitializer - Restores user session on page load/refresh
@@ -101,6 +103,8 @@ function AppRoutes() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/blogp" element={<BlogP />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/old-questions" element={<OldQuestionsPage />} />
+        <Route path="/old-questions/:id" element={<OldQuestionDetails />} />
       </Routes>
     </AuthInitializer>
   );
