@@ -683,13 +683,42 @@ const PRIORITY_ORDER = {
 // API FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const getAds = async () => {
+/**
+ * Fetch all ads from the API with pagination
+ * @param {Object} options - Pagination options
+ * @param {number} options.page - Page number (0-indexed)
+ * @param {number} options.size - Number of ads per page
+ * @returns {Promise<Array>} Array of ads
+ */
+export const getAds = async ({ page = 0, size = 10 } = {}) => {
   try {
-    const response = await api.get("/ads");
-    const data = response.data?.data || [];
-    if (data.length > 0) {
-      return data.filter((ad) => ad.isActive !== false);
+    const response = await api.get(`/ads?page=${page}&size=${size}`);
+    const responseData = response.data;
+    
+    // Handle different API response structures
+    let ads = [];
+    if (responseData?.data?.content) {
+      // Paginated response: { data: { content: [...], totalPages, totalElements } }
+      ads = responseData.data.content;
+    } else if (Array.isArray(responseData?.data)) {
+      // Array response: { data: [...] }
+      ads = responseData.data;
+    } else if (Array.isArray(responseData?.content)) {
+      // Direct paginated: { content: [...] }
+      ads = responseData.content;
+    } else if (Array.isArray(responseData)) {
+      // Direct array response
+      ads = responseData;
     }
+    
+    if (ads.length > 0) {
+      // Normalize ad data and filter active ads
+      return ads
+        .filter((ad) => ad.isActive !== false && ad.status !== "INACTIVE")
+        .map(normalizeAdData);
+    }
+    
+    // Fallback to static ads if API returns empty
     return getActiveScheduledAds(STATIC_ADS);
   } catch (error) {
     console.warn("Ads API unavailable, using static ads:", error.message);
@@ -697,12 +726,136 @@ export const getAds = async () => {
   }
 };
 
-export const getAdsByPosition = async (position) => {
+/**
+ * Fetch all ads (with larger page size for complete list)
+ * @returns {Promise<Array>} Array of all active ads
+ */
+export const getAllAds = async () => {
+  return getAds({ page: 0, size: 100 });
+};
+
+/**
+ * Normalize position string from API to match our constants
+ * Handles various formats: "Horizontal 1", "horizontal_1", "HORIZONTAL_1", etc.
+ * @param {string} position - Position string from API
+ * @returns {string} Normalized position constant
+ */
+const normalizePosition = (position) => {
+  if (!position) return AD_POSITIONS.HORIZONTAL_1;
+  
+  // Convert to uppercase and replace spaces with underscores
+  const normalized = position.toString().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
+  
+  // Map common variations
+  const positionMap = {
+    'HORIZONTAL_1': AD_POSITIONS.HORIZONTAL_1,
+    'HORIZONTAL_2': AD_POSITIONS.HORIZONTAL_2,
+    'HORIZONTAL_3': AD_POSITIONS.HORIZONTAL_3,
+    'VERTICAL_1': AD_POSITIONS.VERTICAL_1,
+    'VERTICAL_2': AD_POSITIONS.VERTICAL_2,
+    'VERTICAL_3': AD_POSITIONS.VERTICAL_3,
+    'VERTICAL_4': AD_POSITIONS.VERTICAL_4,
+    'FLOATING_BOTTOM': AD_POSITIONS.FLOATING_BOTTOM,
+    'FLOATING_RIGHT': AD_POSITIONS.FLOATING_RIGHT,
+    // Handle "Horizontal 1" format
+    'HORIZONTAL1': AD_POSITIONS.HORIZONTAL_1,
+    'HORIZONTAL2': AD_POSITIONS.HORIZONTAL_2,
+    'HORIZONTAL3': AD_POSITIONS.HORIZONTAL_3,
+    'VERTICAL1': AD_POSITIONS.VERTICAL_1,
+    'VERTICAL2': AD_POSITIONS.VERTICAL_2,
+    'VERTICAL3': AD_POSITIONS.VERTICAL_3,
+    'VERTICAL4': AD_POSITIONS.VERTICAL_4,
+    'FLOATINGBOTTOM': AD_POSITIONS.FLOATING_BOTTOM,
+    'FLOATINGRIGHT': AD_POSITIONS.FLOATING_RIGHT,
+  };
+  
+  return positionMap[normalized] || positionMap[normalized.replace(/_/g, '')] || AD_POSITIONS.HORIZONTAL_1;
+};
+
+/**
+ * Normalize ad data from API to consistent format
+ * API Response Structure:
+ * - adId: unique identifier
+ * - title: ad title
+ * - banner: banner name/text
+ * - position: "vertical_1", "horizontal_1", etc.
+ * - images: array of image filenames
+ * - status: "ACTIVE", "PAUSED", etc.
+ * - isActive: boolean
+ * - priority: "HIGH", "MEDIUM", "LOW"
+ * - weight: display weight/priority
+ * 
+ * @param {Object} ad - Ad data from API
+ * @returns {Object} Normalized ad data
+ */
+const normalizeAdData = (ad) => {
+  // Base URL for images
+  const IMAGE_BASE_URL = "https://api.entrancegateway.com/images/";
+  
+  // Get the first image from images array, or fallback to other image fields
+  let imageUrl = "";
+  if (ad.images && ad.images.length > 0) {
+    imageUrl = `${IMAGE_BASE_URL}${ad.images[0]}`;
+  } else if (ad.imageUrl) {
+    imageUrl = ad.imageUrl.startsWith("http") ? ad.imageUrl : `${IMAGE_BASE_URL}${ad.imageUrl}`;
+  } else if (ad.image) {
+    imageUrl = ad.image.startsWith("http") ? ad.image : `${IMAGE_BASE_URL}${ad.image}`;
+  } else if (ad.bannerImage) {
+    imageUrl = ad.bannerImage.startsWith("http") ? ad.bannerImage : `${IMAGE_BASE_URL}${ad.bannerImage}`;
+  }
+  
+  return {
+    id: ad.adId || ad.id || ad._id || `ad-${Date.now()}`,
+    adId: ad.adId || ad.id,
+    title: ad.title || ad.bannerName || "Advertisement",
+    bannerName: ad.banner || ad.bannerName || ad.name || "",
+    description: ad.notes || ad.description || "",
+    position: normalizePosition(ad.position),
+    priority: ad.priority || AD_PRIORITY.MEDIUM,
+    status: ad.status || AD_STATUS.ACTIVE,
+    imageUrl: imageUrl,
+    bannerUrl: imageUrl, // Alias for compatibility
+    redirectUrl: ad.redirectUrl || ad.link || ad.url || "#",
+    linkUrl: ad.redirectUrl || ad.link || ad.url || "#", // Alias
+    startDate: ad.startDate || null,
+    endDate: ad.endDate || null,
+    weight: ad.weight || 50,
+    isActive: ad.isActive !== false && ad.status === "ACTIVE",
+    // Additional fields from API
+    totalBudget: ad.totalBudget || 0,
+    costPerClick: ad.costPerClick || 0,
+    costPerImpression: ad.costPerImpression || 0,
+    maxImpressions: ad.maxImpressions || 0,
+    maxClicks: ad.maxClicks || 0,
+    targetAudience: ad.targetAudience || "",
+    targetLocation: ad.targetLocation || "",
+    targetDevices: ad.targetDevices || "",
+    tags: ad.tags || "",
+    utmParameters: ad.utmParameters || "",
+    trackingPixel: ad.trackingPixel || "",
+    displaySchedule: ad.displaySchedule || "",
+    createdBy: ad.createdBy || "",
+  };
+};
+
+export const getAdsByPosition = async (position, { page = 0, size = 10 } = {}) => {
   try {
-    const response = await api.get(`/api/v1/ads?position=${position}`);
-    const data = response.data?.data || [];
-    if (data.length > 0) {
-      return data.filter((ad) => ad.isActive !== false);
+    const response = await api.get(`/ads?position=${position}&page=${page}&size=${size}`);
+    const responseData = response.data;
+    
+    let ads = [];
+    if (responseData?.data?.content) {
+      ads = responseData.data.content;
+    } else if (Array.isArray(responseData?.data)) {
+      ads = responseData.data;
+    } else if (Array.isArray(responseData)) {
+      ads = responseData;
+    }
+    
+    if (ads.length > 0) {
+      return ads
+        .filter((ad) => ad.isActive !== false)
+        .map(normalizeAdData);
     }
     return getActiveScheduledAds(STATIC_ADS).filter((ad) => ad.position === position);
   } catch (error) {

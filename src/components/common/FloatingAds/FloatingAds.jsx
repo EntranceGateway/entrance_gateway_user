@@ -16,25 +16,22 @@ import { getAds, filterAdsByPosition, AD_POSITIONS } from "../../../http/ads";
  * └─────────────┴───────────────────────────────┴───────────────┘
  */
 
-// Check if ad was dismissed
+// Check if ad was dismissed (session-based - shows again on navigation)
 const isAdDismissed = (adId) => {
   try {
-    const dismissed = JSON.parse(localStorage.getItem("dismissedAds") || "{}");
-    const dismissedTime = dismissed[adId];
-    if (!dismissedTime) return false;
-    const hoursSinceDismiss = (Date.now() - dismissedTime) / (1000 * 60 * 60);
-    return hoursSinceDismiss < 24;
+    const dismissed = JSON.parse(sessionStorage.getItem("dismissedAds") || "{}");
+    return !!dismissed[adId];
   } catch {
     return false;
   }
 };
 
-// Mark ad as dismissed
+// Mark ad as dismissed for current session only
 const dismissAd = (adId) => {
   try {
-    const dismissed = JSON.parse(localStorage.getItem("dismissedAds") || "{}");
+    const dismissed = JSON.parse(sessionStorage.getItem("dismissedAds") || "{}");
     dismissed[adId] = Date.now();
-    localStorage.setItem("dismissedAds", JSON.stringify(dismissed));
+    sessionStorage.setItem("dismissedAds", JSON.stringify(dismissed));
   } catch {}
 };
 
@@ -245,10 +242,11 @@ const FloatingAds = ({ showBottomBanner = true, showCornerAds = true }) => {
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        const ads = await getAds();
+        const ads = await getAds({ page: 0, size: 20 });
         setAllAds(ads);
       } catch (error) {
         console.error("Failed to fetch floating ads:", error);
+        setAllAds([]);
       } finally {
         setLoading(false);
       }

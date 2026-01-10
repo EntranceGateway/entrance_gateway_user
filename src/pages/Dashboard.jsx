@@ -1,17 +1,151 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Users, Trophy, ArrowRight, Star, TrendingUp, CheckCircle } from 'lucide-react';
+import { BookOpen, GraduationCap, Users, Trophy, ArrowRight, Star, TrendingUp, CheckCircle, X, ExternalLink } from 'lucide-react';
 import AdCard from "../components/common/Adcard/Adcard";
 import Card from "../components/common/Card";
-import AdsPanel from "../components/layout/AdsPanel";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import CoursesSection from './notes/course/CoursesSection';
 import MockTestHero from './MockTestHero/MockTestHero';
 import Colleges from './Colleges/Colleges';
 import { getAds, AD_POSITIONS, filterAdsByPosition } from "../http/ads";
+
+/**
+ * Floating Corner Ad Component - Shows only on Dashboard
+ * Professional design with image fallback, animations, and priority badge
+ * Uses React state for dismiss (resets on navigation)
+ */
+const FloatingCornerAd = ({ ad, position = "right" }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  if (!ad || !isVisible) return null;
+
+  const handleClose = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsVisible(false);
+  };
+
+  const positionClasses = position === "left" 
+    ? "left-4 bottom-24" 
+    : "right-4 bottom-24";
+
+  // Priority badge colors
+  const priorityColors = {
+    HIGH: "bg-red-500",
+    MEDIUM: "bg-orange-500",
+    LOW: "bg-blue-500",
+    CRITICAL: "bg-purple-500",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: position === "right" ? 100 : -100, scale: 0.8 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: position === "right" ? 100 : -100, scale: 0.8 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`fixed ${positionClasses} z-40 hidden lg:block`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <motion.div 
+        animate={{ y: isHovered ? -5 : 0 }}
+        transition={{ duration: 0.2 }}
+        className="w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+        style={{ boxShadow: isHovered ? "0 25px 50px -12px rgba(0, 0, 0, 0.25)" : "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+      >
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-3 right-3 z-20 p-1.5 bg-white/90 hover:bg-red-50 rounded-full transition-all shadow-md group"
+          title="Close"
+        >
+          <X className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
+        </button>
+
+        {/* Ad Image with Overlay */}
+        <a
+          href={ad.redirectUrl || ad.linkUrl || "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <div className="relative h-40 overflow-hidden">
+            {!imageError && (ad.imageUrl || ad.bannerUrl) ? (
+              <motion.img 
+                src={ad.imageUrl || ad.bannerUrl} 
+                alt={ad.title} 
+                className="w-full h-full object-cover"
+                animate={{ scale: isHovered ? 1.05 : 1 }}
+                transition={{ duration: 0.3 }}
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-linear-to-br from-orange-400 via-orange-500 to-amber-500 flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-white font-bold text-4xl">EG</span>
+                  <p className="text-white/80 text-xs mt-1">Entrance Gateway</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+            
+            {/* Badges Row */}
+            <div className="absolute top-3 left-3 flex items-center gap-2">
+              <span className="text-[10px] font-semibold text-white bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                Sponsored
+              </span>
+              {ad.priority && (
+                <span className={`text-[10px] font-semibold text-white ${priorityColors[ad.priority] || "bg-gray-500"} px-2 py-1 rounded-full`}>
+                  {ad.priority}
+                </span>
+              )}
+            </div>
+
+            {/* Title on Image */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <h4 className="font-bold text-white text-base leading-tight line-clamp-2 drop-shadow-lg">
+                {ad.title}
+              </h4>
+            </div>
+          </div>
+
+          {/* Ad Content */}
+          <div className="p-4 bg-linear-to-b from-white to-gray-50">
+            <p className="text-xs text-gray-500 mb-4 line-clamp-2 min-h-8">
+              {ad.bannerName || ad.description || "Exclusive offer tailored for you. Click to discover more!"}
+            </p>
+            
+            {/* CTA Button */}
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center justify-center gap-2 w-full bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-sm py-3 px-4 rounded-xl transition-all shadow-lg"
+            >
+              <span>Learn More</span>
+              <ExternalLink className="w-4 h-4" />
+            </motion.div>
+
+            {/* Trust indicator */}
+            <p className="text-[10px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
+              <span className="w-3 h-3 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              </span>
+              Verified Partner
+            </p>
+          </div>
+        </a>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 // Stats data
 const stats = [
@@ -31,8 +165,8 @@ const Dashboard = ({ showAds = false, show = true }) => {
   const handleMouseMove = (e) => {
     if (!heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
-    const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
     setMousePosition({ x, y });
   };
 
@@ -44,10 +178,11 @@ const Dashboard = ({ showAds = false, show = true }) => {
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        const data = await getAds();
+        const data = await getAds({ page: 0, size: 20 });
         setAds(data);
       } catch (error) {
         console.error("Failed to fetch ads:", error);
+        setAds([]);
       } finally {
         setLoading(false);
       }
@@ -55,19 +190,23 @@ const Dashboard = ({ showAds = false, show = true }) => {
     fetchAds();
   }, []);
 
-  // Helper to get ads by position
+  // Helper to get ads by position (for horizontal ads display in Dashboard content)
   const getAdsByPos = (position) => filterAdsByPosition(ads, position);
 
-  // Horizontal ads (for grid display)
+  // Horizontal ads (for grid display in content)
   const horizontalAds1 = getAdsByPos(AD_POSITIONS.HORIZONTAL_1);
   const horizontalAds2 = getAdsByPos(AD_POSITIONS.HORIZONTAL_2);
   const horizontalAds3 = getAdsByPos(AD_POSITIONS.HORIZONTAL_3);
 
-  // Vertical ads (for sidebar)
-  const verticalAds1 = getAdsByPos(AD_POSITIONS.VERTICAL_1);
-  const verticalAds2 = getAdsByPos(AD_POSITIONS.VERTICAL_2);
-  const verticalAds3 = getAdsByPos(AD_POSITIONS.VERTICAL_3);
-  const verticalAds4 = getAdsByPos(AD_POSITIONS.VERTICAL_4);
+  // Vertical/Floating ads for corner display (Dashboard only)
+  const verticalAds = [
+    ...getAdsByPos(AD_POSITIONS.VERTICAL_1),
+    ...getAdsByPos(AD_POSITIONS.VERTICAL_2),
+    ...getAdsByPos(AD_POSITIONS.VERTICAL_3),
+    ...getAdsByPos(AD_POSITIONS.VERTICAL_4),
+  ];
+  const floatingRightAds = getAdsByPos(AD_POSITIONS.FLOATING_RIGHT);
+  const cornerAd = floatingRightAds[0] || verticalAds[0] || ads[0];
 
   return (
     <DashboardLayout>
@@ -344,7 +483,7 @@ const Dashboard = ({ showAds = false, show = true }) => {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="bg-gradient-to-br from-white to-orange-50 py-16 lg:py-24 rounded-3xl -mx-6 md:-mx-8 px-6 md:px-8 overflow-hidden"
+              className="bg-linear-to-br from-white to-orange-50 py-16 lg:py-24 rounded-3xl -mx-6 md:-mx-8 px-6 md:px-8 overflow-hidden"
             >
               <div className="max-w-7xl mx-auto h-full">
                 {/* REMOVED 'items-center' so columns stretch to equal height */}
@@ -476,64 +615,15 @@ const Dashboard = ({ showAds = false, show = true }) => {
             
             <Colleges/>
           </main>
-
-          {/* Sidebar with Vertical Ads */}
-          {showAds && (
-            <aside className="hidden lg:block w-80 shrink-0 space-y-6">
-              {/* Vertical Ad Position 1 */}
-              {verticalAds1.length > 0 && verticalAds1.map((ad) => (
-                <div key={ad.id || ad.adId} className="sticky top-4">
-                  <AdCard 
-                    title={ad.title} 
-                    banner={ad.bannerUrl || ad.imageUrl} 
-                    bannerUrl={ad.redirectUrl || ad.linkUrl || "#"} 
-                    badge={ad.bannerName || "Sponsored"}
-                  />
-                </div>
-              ))}
-              
-              {/* Vertical Ad Position 2 */}
-              {verticalAds2.length > 0 && verticalAds2.map((ad) => (
-                <AdCard 
-                  key={ad.id || ad.adId} 
-                  title={ad.title} 
-                  banner={ad.bannerUrl || ad.imageUrl} 
-                  bannerUrl={ad.redirectUrl || ad.linkUrl || "#"} 
-                  badge={ad.bannerName || "Sponsored"}
-                />
-              ))}
-              
-              {/* Vertical Ad Position 3 */}
-              {verticalAds3.length > 0 && verticalAds3.map((ad) => (
-                <AdCard 
-                  key={ad.id || ad.adId} 
-                  title={ad.title} 
-                  banner={ad.bannerUrl || ad.imageUrl} 
-                  bannerUrl={ad.redirectUrl || ad.linkUrl || "#"} 
-                  badge={ad.bannerName || "Sponsored"}
-                />
-              ))}
-              
-              {/* Vertical Ad Position 4 */}
-              {verticalAds4.length > 0 && verticalAds4.map((ad) => (
-                <AdCard 
-                  key={ad.id || ad.adId} 
-                  title={ad.title} 
-                  banner={ad.bannerUrl || ad.imageUrl} 
-                  bannerUrl={ad.redirectUrl || ad.linkUrl || "#"} 
-                  badge={ad.bannerName || "Sponsored"}
-                />
-              ))}
-              
-              {/* Fallback if no vertical ads */}
-              {verticalAds1.length === 0 && verticalAds2.length === 0 && 
-               verticalAds3.length === 0 && verticalAds4.length === 0 && (
-                <AdsPanel />
-              )}
-            </aside>
-          )}
         </div>
       </div>
+      
+      {/* Floating Corner Ad - Dashboard only */}
+      <AnimatePresence>
+        {cornerAd && (
+          <FloatingCornerAd ad={cornerAd} position="right" />
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };
