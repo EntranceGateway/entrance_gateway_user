@@ -5,6 +5,7 @@ import AdsPanel from "./AdsPanel";
 import { getAds, filterAdsByPosition, AD_POSITIONS } from "../../http/ads";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import axios from "axios";
 
 /**
  * DashboardLayout - Main layout wrapper with professional floating ads
@@ -32,6 +33,30 @@ import { X, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
  */
 
 /**
+ * Utility to get ad image URL (handles auth for protected images)
+ */
+const getAdImageUrl = async (imageNameOrUrl) => {
+  if (!imageNameOrUrl) return null;
+  // If it's a full URL, return as is
+  if (/^https?:\/\//.test(imageNameOrUrl)) return imageNameOrUrl;
+  // Otherwise, fetch with auth
+  const token = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get(
+      `https://api.entrancegateway.com/${imageNameOrUrl}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      }
+    );
+    return URL.createObjectURL(response.data);
+  } catch (err) {
+    console.error("Failed to fetch ad image", err);
+    return null;
+  }
+};
+
+/**
  * Fixed Bottom Banner for Vertical Ads - Professional Full-Width Style
  * Features: Auto-rotation, image fallback, priority indicator, smooth animations
  * Similar to Google Ads / Professional Ad Networks
@@ -41,6 +66,7 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
 
   // Auto-rotate ads every 6 seconds (pause on hover)
   useEffect(() => {
@@ -53,6 +79,30 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
   }, [ads.length, isHovered]);
 
   const currentAd = ads[currentAdIndex];
+
+  useEffect(() => {
+    let isMounted = true;
+    setImageUrl(null);
+    setImageError(false);
+    if (!currentAd) return;
+    // Always use the raw image field (not normalized URL)
+    (async () => {
+      // Prefer images[0] if available, else image, imageUrl, bannerImage
+      let rawImage = null;
+      if (Array.isArray(currentAd.images) && currentAd.images.length > 0) {
+        rawImage = currentAd.images[0];
+      } else if (currentAd.image) {
+        rawImage = currentAd.image;
+      } else if (currentAd.imageUrl) {
+        rawImage = currentAd.imageUrl;
+      } else if (currentAd.bannerImage) {
+        rawImage = currentAd.bannerImage;
+      }
+      const url = await getAdImageUrl(rawImage);
+      if (isMounted) setImageUrl(url);
+    })();
+    return () => { isMounted = false; };
+  }, [currentAd]);
 
   if (!currentAd || !isVisible) return null;
 
@@ -75,7 +125,7 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
     setCurrentAdIndex((prev) => (prev + 1) % ads.length);
     setImageError(false);
   };
-
+  
   // Priority colors for badge
   const priorityColors = {
     HIGH: "from-red-500 to-rose-600",
@@ -132,9 +182,9 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
                 
                 {/* Left: Ad Image with Hover Effect */}
                 <div className="hidden sm:block w-48 md:w-64 lg:w-80 shrink-0 relative overflow-hidden">
-                  {!imageError && (currentAd.imageUrl || currentAd.bannerUrl) ? (
+                  {!imageError && imageUrl ? (
                     <motion.img 
-                      src={currentAd.imageUrl || currentAd.bannerUrl} 
+                      src={imageUrl} 
                       alt={currentAd.title}
                       className="w-full h-full object-cover"
                       animate={{ scale: isHovered ? 1.05 : 1 }}
