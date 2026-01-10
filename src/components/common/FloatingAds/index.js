@@ -1,5 +1,4 @@
 export { 
   default, 
-  BottomBanner, 
-  CornerAd 
+  SlimBottomBanner 
 } from "./FloatingAds";
