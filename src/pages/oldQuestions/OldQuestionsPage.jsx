@@ -174,43 +174,61 @@ function QuestionCard({ question, index, onClick }) {
 }
 
 /* ============================================
-   YEAR SELECT COMPONENT (Dropdown Input)
+   YEAR SELECT COMPONENT (Year Input)
 ============================================ */
 function YearSelect({ selectedYear, onYearChange }) {
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+
+  const handleYearInput = (e) => {
+    const value = e.target.value;
+    // Only allow numbers and max 4 digits
+    if (/^\d{0,4}$/.test(value)) {
+      onYearChange(value);
+    }
+  };
+
+  const isValidYear = selectedYear && 
+    selectedYear.length === 4 && 
+    parseInt(selectedYear) >= 1990 && 
+    parseInt(selectedYear) <= currentYear;
 
   return (
     <div className="mb-6">
       <label className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
         <Calendar size={14} className="text-orange-500" />
-        Select Year
+        Enter Year
       </label>
       <div className="relative mt-2">
-        <select
+        <input
+          type="text"
+          inputMode="numeric"
           value={selectedYear}
-          onChange={(e) => onYearChange(e.target.value)}
-          className="w-full appearance-none px-4 py-3 pr-10
+          onChange={handleYearInput}
+          placeholder="e.g. 2021"
+          maxLength={4}
+          className="w-full px-4 py-3 pr-10
                      bg-white border border-slate-200 rounded-xl
                      text-slate-800 font-medium text-sm
                      focus:border-orange-500 focus:ring-2 focus:ring-orange-100
-                     transition-all duration-200 cursor-pointer
-                     hover:border-orange-300 shadow-sm"
-        >
-          <option value="">All Years</option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
+                     focus:outline-none
+                     transition-all duration-200
+                     hover:border-orange-300 shadow-sm
+                     placeholder:text-slate-400"
+        />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-          <ChevronDown size={18} className="text-slate-400" />
+          <Calendar size={18} className="text-slate-400" />
         </div>
       </div>
 
+      {/* Year validation hint */}
+      {selectedYear && !isValidYear && (
+        <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
+          <span>Enter a valid 4-digit year (1990 - {currentYear})</span>
+        </p>
+      )}
+
       {/* Selected Year Display */}
-      {selectedYear && (
+      {isValidYear && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
