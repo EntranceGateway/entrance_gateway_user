@@ -85,20 +85,8 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
     setImageUrl(null);
     setImageError(false);
     if (!currentAd) return;
-    // Always use the raw image field (not normalized URL)
     (async () => {
-      // Prefer images[0] if available, else image, imageUrl, bannerImage
-      let rawImage = null;
-      if (Array.isArray(currentAd.images) && currentAd.images.length > 0) {
-        rawImage = currentAd.images[0];
-      } else if (currentAd.image) {
-        rawImage = currentAd.image;
-      } else if (currentAd.imageUrl) {
-        rawImage = currentAd.imageUrl;
-      } else if (currentAd.bannerImage) {
-        rawImage = currentAd.bannerImage;
-      }
-      const url = await getAdImageUrl(rawImage);
+      const url = await getAdImageUrl(currentAd.imageUrl || currentAd.bannerUrl);
       if (isMounted) setImageUrl(url);
     })();
     return () => { isMounted = false; };
@@ -126,6 +114,7 @@ const VerticalAdsBottomBanner = ({ ads = [] }) => {
     setImageError(false);
   };
   
+
   // Priority colors for badge
   const priorityColors = {
     HIGH: "from-red-500 to-rose-600",
