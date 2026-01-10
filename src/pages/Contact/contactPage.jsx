@@ -8,6 +8,7 @@ import {
   Send,
   MessageSquare,
   CheckCircle,
+  AlertCircle,
   Facebook,
   Instagram,
   Linkedin,
@@ -18,6 +19,18 @@ import {
   BookOpen,
 } from "lucide-react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import { submitContactForm } from "../../http/contactApi";
+
+// Subject options matching API enum values
+const subjectOptions = [
+  { value: "GENERAL_INQUIRY", label: "General Inquiry" },
+  { value: "TECHNICAL_SUPPORT", label: "Technical Support" },
+  { value: "BILLING_ISSUES", label: "Billing Issues" },
+  { value: "FEEDBACK_SUGGESTIONS", label: "Feedback & Suggestions" },
+  { value: "COURSE_INFORMATION", label: "Course Information" },
+  { value: "COLLABORATION_OPPORTUNITIES", label: "Collaboration Opportunities" },
+  { value: "OTHER", label: "Other" },
+];
 
 // Contact info cards data
 const contactInfo = [
@@ -101,6 +114,7 @@ const ContactPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   const handleChange = (e) => {
@@ -111,16 +125,37 @@ const ContactPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Prepare data for API
+      const contactData = {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        phone: formData.phone || undefined,
+        subject: formData.subject,
+      };
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+      await submitContactForm(contactData);
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setIsSubmitted(false), 5000);
+      setIsSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+
+      // Reset success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to send message. Please try again.";
+      setError(errorMessage);
+
+      // Reset error message after 5 seconds
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -256,6 +291,22 @@ const ContactPage = () => {
                 </motion.div>
               )}
 
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
+                >
+                  <AlertCircle className="w-6 h-6 text-red-600" />
+                  <div>
+                    <p className="font-semibold text-red-800">
+                      Failed to Send Message
+                    </p>
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -314,11 +365,11 @@ const ContactPage = () => {
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition bg-white"
                     >
                       <option value="">Select a subject</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="support">Technical Support</option>
-                      <option value="courses">Course Information</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="feedback">Feedback</option>
+                      {subjectOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

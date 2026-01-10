@@ -27,6 +27,7 @@ import ContactPage from "./pages/Contact/contactPage";
 import ChangePassword from "./pages/Password/changePassword";
 import ForgotPassword from "./pages/Password/ForgotPassword";
 import Login from "./pages/Register/Userlogin";
+import ProfilePage from "./pages/profile/profilePage";
 
 /**
  * AuthInitializer - Restores user session on page load/refresh
@@ -99,6 +100,7 @@ function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/blogp" element={<BlogP />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </AuthInitializer>
   );
