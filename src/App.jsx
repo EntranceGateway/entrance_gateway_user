@@ -27,7 +27,7 @@ import BlogP from "./components/Pagination/hh";
 import ContactPage from "./pages/Contact/contactPage";
 import ChangePassword from "./pages/Password/changePassword";
 import ForgotPassword from "./pages/Password/ForgotPassword";
-import Login from "./pages/Register/Userlogin";
+
 import ProfilePage from "./pages/profile/profilePage";
 import OldQuestionsPage from "./pages/oldQuestions/OldQuestionsPage";
 import OldQuestionDetails from "./pages/oldQuestions/OldQuestionDetails";
@@ -84,7 +84,7 @@ function AppRoutes() {
         <Route path="/signup" element={<StepRegister />} />
         <Route path="/verify-otp" element={<StepOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        
+
         {/* Protected Routes */}
         <Route path="/" element={<Dashboard />} />
         <Route path="/notes/:course/:sem" element={<NotesGrid />} />
