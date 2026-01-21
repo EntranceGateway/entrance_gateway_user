@@ -297,7 +297,7 @@ function AppRoutes() {
             Courses Routes
         ═══════════════════════════════════════════ */}
         <Route path="/courses" element={<CoursesPage />} />
-        <Route path="/courses/:id" element={<CourseDetails />} />
+        <Route path="/courses/:id" element={<CourseDetailPage />} />
 
         {/* ═══════════════════════════════════════════
             Syllabus Routes

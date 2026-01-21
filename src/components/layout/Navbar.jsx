@@ -81,20 +81,23 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center space-x-10">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={`text-base font-semibold transition-colors flex items-center gap-1.5 ${
-                  location.pathname === link.path
-                    ? "text-accent"
-                    : "text-gray-700 hover:text-accent"
-                }`}
-              >
-                <span className="material-icons-round text-xl opacity-70">{link.icon}</span>
-                {link.name}
-              </Link>
-            ))}
+            {PRIMARY_LINKS.map((link) => {
+              const IconComponent = link.icon;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`text-base font-semibold transition-colors flex items-center gap-1.5 ${
+                    location.pathname === link.path
+                      ? "text-accent"
+                      : "text-gray-700 hover:text-accent"
+                  }`}
+                >
+                  <IconComponent className="w-5 h-5 opacity-70" />
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="hidden md:flex items-center space-x-5">
@@ -165,21 +168,24 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
           <div className="px-4 py-4 space-y-2 max-h-[calc(100vh-5rem)] overflow-y-auto">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
-                  location.pathname === link.path
-                    ? "bg-accent/10 text-accent"
-                    : "text-gray-800 hover:text-accent hover:bg-accent/5"
-                }`}
-              >
-                <span className="material-icons-round text-xl">{link.icon}</span>
-                {link.name}
-              </Link>
-            ))}
+            {PRIMARY_LINKS.map((link) => {
+              const IconComponent = link.icon;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                    location.pathname === link.path
+                      ? "bg-accent/10 text-accent"
+                      : "text-gray-800 hover:text-accent hover:bg-accent/5"
+                  }`}
+                >
+                  <IconComponent className="w-5 h-5" />
+                  {link.name}
+                </Link>
+              );
+            })}
 
             <div className="border-t border-gray-100 pt-4 mt-4">
               {!isLoading && (
