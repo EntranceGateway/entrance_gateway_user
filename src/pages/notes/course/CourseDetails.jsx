@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { getSingleCourse, getCourseSyllabus } from '../../../http/course';
+import MarkdownFormatter from '../../../components/common/MarkdownFormatter';
 
 const AFFILIATION_LABELS = {
   TRIBHUVAN_UNIVERSITY: 'Tribhuvan University',
@@ -127,13 +128,8 @@ const CourseDetailPage = () => {
                   {course.courseName}
                 </h1>
 
-                {/* Description */}
-                <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                  {course.description || 'A comprehensive program designed to build expertise and prepare students for professional success in their chosen field.'}
-                </p>
-
                 {/* Quick Info Cards */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -166,12 +162,7 @@ const CourseDetailPage = () => {
 
               {/* Right Banner - 2 columns */}
               <div className="lg:col-span-2 relative h-64 lg:h-auto">
-                <img
-                  src={course.bannerImage || DEFAULT_COURSE_BANNER}
-                  alt={course.courseName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => (e.target.src = DEFAULT_COURSE_BANNER)}
-                />
+             
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent lg:bg-gradient-to-l"></div>
               </div>
             </div>
@@ -208,7 +199,27 @@ const CourseDetailPage = () => {
         <div className="max-w-7xl mx-auto px-8 py-12">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="space-y-8">
+            <div className="space-y-10">
+              {/* Course Description / Overview */}
+              <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900">Course Overview</h2>
+                </div>
+
+                <MarkdownFormatter
+                  text={
+                    course.description ||
+                    'A comprehensive program designed to build expertise and prepare students for professional success in their chosen field.'
+                  }
+                  className="text-slate-700 prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-p:mb-4 prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-2"
+                />
+              </section>
+
               {/* Admission Requirements */}
               <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
                 <div className="flex items-center gap-3 mb-6">

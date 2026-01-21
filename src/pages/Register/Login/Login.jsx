@@ -30,7 +30,7 @@ const Form = ({ role = "user", type, onSubmit, user,error  }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side */}
-      <div className="md:w-1/2 bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-10">
+      <div className="md:w-1/2 bg-linear-to-br from-orange-500 to-indigo-600 flex items-center justify-center p-10">
         <h2 className="text-white text-4xl font-bold">{isAdmin ? "Welcome, Admin!" : "Welcome Back!"}</h2>
       </div>
 
@@ -85,7 +85,7 @@ const Form = ({ role = "user", type, onSubmit, user,error  }) => {
             </div>
             <button
               type="submit"
-              className="w-full bg-linear-to-r from-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold transition-all"
+              className="w-full bg-linear-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white py-3 rounded-lg font-semibold transition-all"
             >
               Sign In
             </button>

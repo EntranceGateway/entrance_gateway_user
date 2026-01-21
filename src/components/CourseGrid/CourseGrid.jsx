@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
 
-const DEFAULT_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80";
-
 export default function CourseGrid({ data = [] }) {
   if (!data || data.length === 0) {
     return (
@@ -37,64 +34,61 @@ export default function CourseGrid({ data = [] }) {
       {data.map((course) => (
         <article
           key={course.id}
-          className="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-orange-100/50 hover:-translate-y-2 transition-all duration-500"
+          className="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-orange-100/50 hover:-translate-y-2 transition-all duration-500 flex flex-col"
         >
-          {/* Image */}
-          <div className="relative h-56 overflow-hidden bg-slate-100">
-            <img
-              src={course.image}
-              alt={`${course.name} - ${course.collegeName}`}
-              onError={(e) => (e.target.src = DEFAULT_FALLBACK_IMAGE)}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              loading="lazy"
-            />
-
-            {/* University Badge */}
-            <div className="absolute top-4 left-4">
-              <span className="inline-block px-4 py-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider bg-white/80 backdrop-blur-md rounded-full border border-white/50 shadow-md">
+          {/* Header Area (Replaces Image) */}
+          <div className="relative p-6 pb-0">
+            <div className="flex items-center justify-between mb-4">
+              <span className="inline-block px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] bg-slate-100 rounded-md border border-slate-200">
                 {course.affiliation}
               </span>
+              <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></div>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="p-6">
             <p className="text-xs font-bold text-orange-600 uppercase tracking-wider mb-2">
               {course.collegeName}
             </p>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-3 line-clamp-2 group-hover:text-orange-600 transition-colors duration-300">
+            <h3 className="text-2xl font-black text-slate-900 mb-3 line-clamp-2 group-hover:text-orange-600 transition-colors duration-300">
               {course.name}
             </h3>
+          </div>
 
-            <p className="text-sm text-slate-600 line-clamp-3 mb-6 leading-relaxed">
+          {/* Content Area */}
+          <div className="p-6 pt-2 flex flex-col flex-1">
+            <p className="text-sm text-slate-600 line-clamp-4 mb-8 leading-relaxed">
               {course.description ||
-                "Comprehensive program designed to equip you with industry-relevant skills and knowledge."}
+                "Comprehensive program designed to equip you with industry-relevant skills and knowledge through professional guidance."}
             </p>
 
-            <Link
-              to={`/courses/${course.id}`}
-              className="inline-flex items-center text-sm font-bold text-slate-900 hover:text-orange-600 transition-colors"
-              aria-label={`View details for ${course.name}`}
-            >
-              View Details
-              <span className="ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </span>
-            </Link>
+            <div className="mt-auto">
+              <Link
+                to={`/courses/${course.id}`}
+                className="inline-flex items-center text-sm font-bold text-slate-900 group-hover:text-orange-600 transition-colors w-full justify-between"
+                aria-label={`View details for ${course.name}`}
+              >
+                <span>View Program Details</span>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </span>
+              </Link>
+            </div>
           </div>
+
+          {/* Decorative Bottom Bar */}
+          <div className="h-1.5 w-0 group-hover:w-full bg-orange-500 transition-all duration-500"></div>
         </article>
       ))}
     </div>

@@ -19,7 +19,7 @@ import {
   Bell,
   Phone,
   Shield,
-  FileCheck
+  FileCheck,Award
 } from "lucide-react";
 import useUserAuth from "../../hooks/useUserAuth";
 import { getInitials } from "../../utils/formatters";
@@ -30,6 +30,7 @@ const PRIMARY_LINKS = [
   { name: "Colleges", path: "/colleges", icon: GraduationCap },
   { name: "Courses", path: "/courses", icon: BookOpen },
   { name: "Blogs", path: "/blogs", icon: FileText },
+  { name: "Trainings", path: "/training", icon: Award },
 ];
 
 // Study materials dropdown (mega menu)
