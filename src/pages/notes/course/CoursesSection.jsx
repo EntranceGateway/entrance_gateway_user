@@ -72,13 +72,13 @@ export default function CoursesSection() {
   };
 
   return (
-    <section className="bg-gray-50 py-20 lg:py-28 relative overflow-hidden">
+    <section className="bg-gray-50 py-12 sm:py-16 lg:py-20 relative overflow-hidden rounded-3xl">
       {/* Background Decorations */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
       <div className="absolute top-40 -left-20 w-72 h-72 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           <div className="max-w-2xl">

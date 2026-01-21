@@ -97,20 +97,31 @@ const Dashboard = () => {
   const cornerAd = floatingRightAds[0] || verticalAds[0] || ads[0];
 
   return (
-    <DashboardLayout showFloatingAds={false}>
+    <DashboardLayout showFloatingAds={false} fullWidth={true}>
       <HeroSection />
-      <StatsSection />
-      <AnnouncementsSection ads={horizontalAds1} />
+      
+      {/* Stats Section with proper spacing */}
+      <div className="relative -mt-20 z-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <StatsSection />
+      </div>
+      
+      {/* Announcements Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+        <AnnouncementsSection ads={horizontalAds1} />
+      </div>
+      
       <FeaturesSection />
       
-      <section className="py-20 lg:py-28">
+      {/* Courses Section */}
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <CoursesSection />
         </div>
       </section>
 
+      {/* Horizontal Ads Section */}
       {horizontalAds2.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {horizontalAds2.map((ad) => (
               <AdCard key={ad.id || ad.adId} title={ad.title} banner={ad.bannerUrl || ad.imageUrl} bannerUrl={ad.redirectUrl || ad.linkUrl || "#"} badge={ad.bannerName || "Sponsored"} />

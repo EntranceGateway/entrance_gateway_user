@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, TrendingUp, BookOpen, CheckCircle } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, BookOpen } from "lucide-react";
 
 const STUDENT_AVATARS = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCs5xGAQ2dzyM-Krm51veca0hoxL65ILEvsbMN5UVRWlj5weh7Db_mc0juNATgKHTX9cK2coyrkYd33bOjdN8uWJDOkx3EpGYWk5oSArblyz312hzF9z6qR5WYNcycSYg6eMFchH3aXLXiRnn4rPXjNFP9Ko6---yoCtHw8cjoqSBV68XmNmFVVrbZLrctJe_3bnPYwARz9osbxSrhm54nA5LsBzfTMZWHHXxVLAylU-_v7ComoBsjwGGeYg6s76qr5BdrR_KaRdyk",
@@ -9,29 +9,50 @@ const STUDENT_AVATARS = [
 
 const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuBi8p41NHa5qzsQ61PRvAWVDqaEvGL3S6UCWfYFaFegGldmNtLpkq-sC3ZFblvYe8RSXxd1jKZeEQXUrqYN6u6Abt0GH7J0SsP46-MUMF_CzXYYCwr2sTlbkpbyd6yCi1-4go1m_abcP_FUCnNRFx0xs6krhQkDez79C6DmwZthLNGGRuib6Fj_GJYB9L-SUgt5xqL4NB4nIxb4jtaVoEHKm_np-yEsKXGI33mP96jZI8sS8brsP1Cy5gSjlGY5kAOCGohI80uKsQo";
 
+const FloatingBadge = ({ icon: Icon, label, value, position, animationDuration, bgColor }) => (
+  <div 
+    className={`absolute ${position} bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 animate-bounce z-20 border border-gray-100`}
+    style={{ animationDuration }}
+  >
+    <div className={`p-3 ${bgColor} rounded-lg`}>
+      <Icon className="w-6 h-6" />
+    </div>
+    <div>
+      <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">{label}</p>
+      <p className="text-xl font-bold text-gray-900">{value}</p>
+    </div>
+  </div>
+);
+
 export default function HeroSection() {
   return (
     <section className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 overflow-hidden bg-accent">
+      {/* Background patterns */}
       <div className="absolute inset-0 hero-pattern opacity-10" />
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[500px] h-[500px] bg-secondary rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse" />
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[500px] h-[500px] bg-primary rounded-full mix-blend-multiply filter blur-3xl opacity-25" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-12 items-center">
+          {/* Left Content */}
           <div className="max-w-2xl relative z-10">
+            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-primary text-sm font-bold mb-8 backdrop-blur-sm">
               <span className="material-icons-round text-primary text-lg">verified</span>
               <span>Nepal's #1 Entrance Preparation Platform</span>
             </div>
 
+            {/* Heading */}
             <h1 className="font-display text-5xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 tracking-tight">
               Master Your Future <br /> With <span className="text-gradient">Confidence</span>
             </h1>
 
+            {/* Description */}
             <p className="text-xl text-blue-100 mb-10 leading-relaxed max-w-lg font-light opacity-90">
               Join thousands of successful students who transformed their preparation with our comprehensive study materials, mock tests, and expert guidance.
             </p>
 
+            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-5 mb-12">
               <Link
                 to="/courses"
@@ -48,6 +69,7 @@ export default function HeroSection() {
               </Link>
             </div>
 
+            {/* Social Proof */}
             <div className="flex items-center gap-5 pt-4 border-t border-white/10">
               <div className="flex -space-x-4">
                 {STUDENT_AVATARS.map((avatar, i) => (
@@ -73,7 +95,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative lg:h-[650px] flex items-center justify-center">
+          {/* Right Image */}
+          <div className="relative lg:h-[650px] flex items-center justify-center perspective-1000">
             <div className="relative w-full max-w-md lg:max-w-full aspect-[4/5] lg:aspect-auto h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-sm transform rotate-1 hover:rotate-0 transition-transform duration-500">
               <img
                 alt="Student thinking"
@@ -82,25 +105,23 @@ export default function HeroSection() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-accent/80 via-transparent to-transparent" />
 
-              <div className="absolute top-12 -left-4 lg:-left-8 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 animate-bounce z-20 border border-gray-100" style={{ animationDuration: "3s" }}>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Success Rate</p>
-                  <p className="text-xl font-bold text-gray-900">95%</p>
-                </div>
-              </div>
-
-              <div className="absolute bottom-32 -right-4 lg:-right-8 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 animate-bounce z-20 border border-gray-100" style={{ animationDuration: "4s" }}>
-                <div className="p-3 bg-primary/20 rounded-lg">
-                  <BookOpen className="w-6 h-6 text-yellow-700" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Resources</p>
-                  <p className="text-xl font-bold text-gray-900">1200+</p>
-                </div>
-              </div>
+              {/* Floating Badges */}
+              <FloatingBadge
+                icon={TrendingUp}
+                label="Success Rate"
+                value="95%"
+                position="top-12 -left-4 lg:-left-8"
+                animationDuration="3s"
+                bgColor="bg-green-50"
+              />
+              <FloatingBadge
+                icon={BookOpen}
+                label="Resources"
+                value="1200+"
+                position="bottom-32 -right-4 lg:-right-8"
+                animationDuration="4s"
+                bgColor="bg-primary/20"
+              />
             </div>
           </div>
         </div>

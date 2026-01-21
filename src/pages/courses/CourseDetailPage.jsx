@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { getSingleCourse, getCourseSyllabus } from '../../http/course';
+import ResourceImage from '../../components/common/ResourceViewer/ResourceImage';
 import {
   CourseDetailHero,
   CourseStats,
@@ -152,17 +153,26 @@ export default function CourseDetailPage() {
                         className="group bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-100 hover:border-brand-blue hover:shadow-md cursor-pointer transition-all"
                       >
                         <div className="flex items-start gap-3 sm:gap-4">
-                          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-brand-navy flex items-center justify-center flex-shrink-0">
-                            {college.imageUrl ? (
-                              <img
-                                src={college.imageUrl}
+                          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 p-1.5">
+                            {college.logoName ? (
+                              <ResourceImage
+                                fileName={college.logoName}
                                 alt={college.collegeName}
-                                className="w-full h-full object-cover rounded-lg"
+                                className="w-full h-full object-contain"
+                                fallback={
+                                  <div className="w-full h-full bg-brand-navy rounded flex items-center justify-center">
+                                    <span className="font-bold text-white text-xs">
+                                      {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase()}
+                                    </span>
+                                  </div>
+                                }
                               />
                             ) : (
-                              <span className="font-bold text-white text-xs">
-                                {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase()}
-                              </span>
+                              <div className="w-full h-full bg-brand-navy rounded flex items-center justify-center">
+                                <span className="font-bold text-white text-xs">
+                                  {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase()}
+                                </span>
+                              </div>
                             )}
                           </div>
                           <div className="min-w-0 flex-1">

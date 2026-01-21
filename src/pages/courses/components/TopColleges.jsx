@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-
-const DEFAULT_COLLEGE_IMAGE = 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=2064';
+import ResourceImage from '../../../components/common/ResourceViewer/ResourceImage';
 
 export function TopColleges({ colleges = [] }) {
   const displayColleges = colleges.slice(0, 2);
@@ -26,21 +25,26 @@ export function TopColleges({ colleges = [] }) {
         {displayColleges.map((college, index) => (
           <div key={college.collegeId || index} className={`group ${index > 0 ? 'border-t border-gray-100 pt-4 sm:pt-5' : ''}`}>
             <div className="flex items-start gap-3 sm:gap-4 mb-3">
-              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-brand-navy flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
-                {college.imageUrl ? (
-                  <img 
-                    src={college.imageUrl} 
+              <div className="h-12 w-12 sm:h-14 sm:h-14 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm p-1.5">
+                {college.logoName ? (
+                  <ResourceImage
+                    fileName={college.logoName}
                     alt={college.collegeName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = `<span class="font-bold text-white text-xs tracking-tighter">${college.collegeName?.slice(0, 3).toUpperCase() || 'COL'}</span>`;
-                    }}
+                    className="w-full h-full object-contain"
+                    fallback={
+                      <div className="w-full h-full bg-brand-navy rounded flex items-center justify-center">
+                        <span className="font-bold text-white text-xs tracking-tighter">
+                          {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase() || 'COL'}
+                        </span>
+                      </div>
+                    }
                   />
                 ) : (
-                  <span className="font-bold text-white text-xs tracking-tighter">
-                    {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase() || 'COL'}
-                  </span>
+                  <div className="w-full h-full bg-brand-navy rounded flex items-center justify-center">
+                    <span className="font-bold text-white text-xs tracking-tighter">
+                      {college.collegeName?.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase() || 'COL'}
+                    </span>
+                  </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">

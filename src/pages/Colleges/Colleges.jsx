@@ -57,7 +57,7 @@ export default function Colleges() {
   }
 
   return (
-    <section className="bg-slate-50 min-h-screen py-16 px-4 sm:px-6 lg:px-8">
+    <section className="bg-slate-50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         
         {/* --- HEADER --- */}

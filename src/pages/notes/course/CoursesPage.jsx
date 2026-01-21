@@ -4,6 +4,7 @@ import { Search, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, Brain } fro
 import { getCourses } from "../../../http/course";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { DEFAULT_PAGE_SIZE } from "../../../constants/pagination";
+import ResourceImage from "../../../components/common/ResourceViewer/ResourceImage";
 
 const COURSE_IMAGES = {
   "BCA": "https://lh3.googleusercontent.com/aida-public/AB6AXuCn1Td15PvYN-yDnpL378gV0qW4IMiHo5icSYuAJubbwJZJPNPfR_3nMnpzzyuVqaTvJsfMz8QpsTXVtfcanIRyJB4Gma9vepU_sEdiupzyPhVDB6g0nyl7CaY8xcuz_vQZV8ZbPYaGzlEaAr8bd1JPWcQvyP-FRHp-FbjpGnanYPiySOxipyThHl-cjYROl-OMB2rLBGV713HECZuKERStLliFWzf0BeH0SqJVZsy8QOSej3Rx1b8dAnXLDve_-ZNrZ4ZbyEZjhls",
@@ -38,6 +39,7 @@ const normalizeCourses = (data) =>
       level: course.courseLevel || "BACHELOR",
       type: course.courseType || "SEMESTER",
       duration: course.duration || "4 Years",
+      collegeLogos: course.collegeResponses?.map(c => c.logoName).filter(Boolean) || [],
     };
   });
 
@@ -56,6 +58,9 @@ const CourseCard = ({ course }) => {
   const levelConfig = LEVEL_CONFIG[course.level] || LEVEL_CONFIG.default;
   const iconConfig = ICON_CONFIG[course.name] || ICON_CONFIG.default;
   const image = COURSE_IMAGES[course.name] || COURSE_IMAGES.default;
+  
+  // Get first college logo if available
+  const collegeLogoFileName = course.collegeLogos?.[0];
 
   const handleCardClick = () => {
     navigate(`/courses/${course.id}`);
@@ -74,6 +79,16 @@ const CourseCard = ({ course }) => {
             {levelConfig.label}
           </span>
         </div>
+        {collegeLogoFileName && (
+          <div className="absolute top-4 right-4 w-12 h-12 bg-white rounded-lg shadow-lg p-1.5 flex items-center justify-center">
+            <ResourceImage
+              fileName={collegeLogoFileName}
+              alt={`${course.collegeName} logo`}
+              className="w-full h-full object-contain"
+              fallback={null}
+            />
+          </div>
+        )}
         <div className="absolute bottom-4 left-4 right-4">
           <h3 className="text-white font-display font-bold text-xl drop-shadow-md">{course.name}</h3>
         </div>
@@ -86,15 +101,15 @@ const CourseCard = ({ course }) => {
         <p className="text-sm text-gray-500 line-clamp-3 mb-6 flex-grow leading-relaxed">
           {course.description || `${course.name} provides students with comprehensive knowledge and practical skills for career growth.`}
         </p>
-<div className="flex justify-between items-center pt-4 border-t border-gray-100">
-            <span className="text-xs font-medium text-gray-400">{course.duration}</span>
-            <span 
-              onClick={(e) => e.stopPropagation()}
-              className="bg-brand-gold hover:bg-yellow-400 text-brand-navy font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
-            >
-              View Details <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
+        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+          <span className="text-xs font-medium text-gray-400">{course.duration}</span>
+          <span 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-brand-gold hover:bg-yellow-400 text-brand-navy font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
+          >
+            View Details <ArrowRight className="w-4 h-4" />
+          </span>
+        </div>
       </div>
     </div>
   );
