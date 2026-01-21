@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, ExternalLink, ArrowRight, Building2 } from "lucide-react";
 import Pagination from "../../components/Pagination/pagination";
 import { getColleges } from "../../http/colleges";
-import { ResourceImage } from "../../components/common/ResourceViewer";
 
 export default function Colleges() {
   const [colleges, setColleges] = useState([]);
@@ -111,29 +110,17 @@ export default function Colleges() {
 
 // --- CARD COMPONENT ---
 function CollegeCard({ college, defaultImage }) {
-  // Use first picture from collegePictureName array
-  const imageFileName = college.collegePictureName?.[0];
-  
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
       
       {/* --- IMAGE SECTION --- */}
       <div className="relative h-56 overflow-hidden">
         {/* Image with Zoom Effect */}
-        {imageFileName ? (
-          <ResourceImage
-            fileName={imageFileName}
-            alt={college.collegeName}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
-            fallback={defaultImage}
-          />
-        ) : (
-          <img
-            src={defaultImage}
-            alt={college.collegeName}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
-          />
-        )}
+        <img
+          src={college.imageUrl || defaultImage} // Fallback to your provided URL
+          alt={college.collegeName}
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
+        />
         
         {/* Gradient Overlay (for text contrast if needed, subtly added) */}
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
