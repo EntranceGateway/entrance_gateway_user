@@ -1,91 +1,129 @@
-import React from "react";
-import { Mail, Facebook, Instagram, Linkedin } from "lucide-react"; // Lucide React icons
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Facebook, Instagram, Youtube, Send } from "lucide-react";
+
+const PLATFORM_LINKS = [
+  { name: "About Us", path: "/about" },
+  { name: "Courses", path: "/courses" },
+  { name: "Testimonials", path: "/testimonials" },
+  { name: "Careers", path: "/careers" },
+];
+
+const SUPPORT_LINKS = [
+  { name: "Help Center", path: "/help" },
+  { name: "Terms of Service", path: "/terms" },
+  { name: "Privacy Policy", path: "/privacy" },
+  { name: "FAQs", path: "/faqs" },
+];
+
+const SOCIAL_LINKS = [
+  { icon: Facebook, href: "#", label: "Facebook" },
+  { icon: Instagram, href: "#", label: "Instagram" },
+  { icon: Youtube, href: "#", label: "YouTube" },
+];
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setEmail("");
+  };
+
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Newsletter Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-b border-gray-700">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-white">Newsletter</h2>
-            <p className="text-sm text-gray-400 mt-2">
-              Subscribe to stay updated with our latest content.
+    <footer className="bg-surface-dark text-gray-300 py-16 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+          <div className="lg:col-span-4">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="material-icons-round text-primary text-3xl">school</span>
+              <span className="font-display font-bold text-2xl text-white tracking-tight">EntranceGateway</span>
+            </div>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6 pr-4">
+              EntranceGateway is Nepal's premier digital learning platform dedicated to helping students ace their entrance examinations with confidence and clarity.
             </p>
+            <div className="flex gap-4">
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
+                  className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-accent transition-colors"
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
-          <form className="flex items-center w-full md:w-1/2 bg-gray-800 rounded-lg overflow-hidden">
-            <Mail className="w-6 h-6 ml-3 text-gray-400" />
-            <input
-              type="email"
-              className="flex-1 px-3 py-2 bg-transparent text-gray-200 placeholder-gray-400 focus:outline-none"
-              placeholder="Enter your email address"
-            />
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 font-medium transition"
-            >
-              Subscribe
-            </button>
-          </form>
+
+          <div className="lg:col-span-2 lg:col-start-6">
+            <h3 className="text-white font-bold text-lg mb-6">Platform</h3>
+            <ul className="space-y-4 text-sm">
+              {PLATFORM_LINKS.map((link) => (
+                <li key={link.name}>
+                  <Link to={link.path} className="text-gray-400 hover:text-primary transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/50" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-bold text-lg mb-6">Support</h3>
+            <ul className="space-y-4 text-sm">
+              {SUPPORT_LINKS.map((link) => (
+                <li key={link.name}>
+                  <Link to={link.path} className="text-gray-400 hover:text-primary transition-colors flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/50" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="lg:col-span-3">
+            <h3 className="text-white font-bold text-lg mb-6">Get in Touch</h3>
+            <ul className="space-y-4 text-sm mb-6">
+              <li className="flex items-start gap-3 text-gray-400">
+                <span className="material-icons-round text-primary text-lg mt-0.5">location_on</span>
+                <span>Putalisadak, Kathmandu,<br />Nepal</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-400">
+                <span className="material-icons-round text-primary text-lg">phone</span>
+                <span>+977 9800000000</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-400">
+                <span className="material-icons-round text-primary text-lg">email</span>
+                <span>info@entrancegateway.com</span>
+              </li>
+            </ul>
+            <form onSubmit={handleSubmit} className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-gray-800 border-none rounded-xl text-sm w-full py-3 pl-4 pr-12 focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
+                placeholder="Subscribe to newsletter"
+              />
+              <button type="submit" className="absolute right-1.5 top-1.5 bottom-1.5 bg-primary text-accent rounded-lg px-3 hover:bg-yellow-400 transition-colors">
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+          <p>&copy; 2025 EntranceGateway. All rights reserved.</p>
+          <div className="flex gap-6 mt-4 md:mt-0">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link to="/cookies" className="hover:text-white transition-colors">Cookies</Link>
+            <Link to="/security" className="hover:text-white transition-colors">Security</Link>
+          </div>
         </div>
       </div>
-
-      {/* Footer Columns */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-        {/* Column 1 */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">ENTRANCE GATEWAY</h3>
-          <ul className="space-y-2 text-sm">
-            <li className="hover:text-white cursor-pointer">About</li>
-            <li className="hover:text-white cursor-pointer">Contents</li>
-            <li className="hover:text-white cursor-pointer">Events</li>
-          </ul>
-        </div>
-
-        {/* Column 2 */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">Contact</h3>
-          <p className="text-sm">Address: Your Address Here</p>
-          <p className="text-sm">Phone: +977 98XXXXXX</p>
-          <p className="text-sm">Email: info@entracegateway.com</p>
-        </div>
-
-        {/* Column 3 */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">Useful Links</h3>
-          <ul className="space-y-2 text-sm">
-            <li className="hover:text-white cursor-pointer">Privacy Policy</li>
-            <li className="hover:text-white cursor-pointer">Terms & Conditions</li>
-            <li className="hover:text-white cursor-pointer">FAQ</li>
-          </ul>
-        </div>
-
-        {/* Column 4 */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">Follow Us</h3>
-          <div className="flex space-x-4">
-            <a href="#" className="hover:text-white transition-transform transform hover:scale-110">
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a href="#" className="hover:text-white transition-transform transform hover:scale-110">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="#" className="hover:text-white transition-transform transform hover:scale-110">
-              <Linkedin className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-      </div>
-
-   {/* Bottom Bar */}
-<div className="bg-gray-800 py-4">
-  <div className="max-w-7xl mx-auto px-4 text-center">
-    <p className="text-sm text-gray-400">
-      &copy; 2025 entracegateway. All rights reserved.
-    </p>
-  </div>
-</div>
-
     </footer>
   );
 }

@@ -17,7 +17,7 @@ import StepOTP from "./pages/Register/StepOTP";
 import NotesGrid from "./pages/notes/notesGrid";
 import NoteDetails from "./pages/notes/NoteDetails";
 import CoursesPage from "./pages/notes/course/CoursesPage";
-import CourseDetails from "./pages/notes/course/CourseDetails";
+import CourseDetailPage from "./pages/courses/CourseDetailPage";
 import NotesPage from "./pages/notes/NotePage";
 import SyllabusPage from "./pages/Register/SyllabusPage";
 import SyllabusDetails from "./pages/syllabus/SyllabusDetails";
