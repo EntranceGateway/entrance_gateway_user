@@ -279,7 +279,8 @@ const DashboardLayout = ({
   children, 
   showAds = false,  // Sidebar ads panel disabled by default
   showFloatingAds = true,  // Show floating ads by default on all pages
-  showBottomPadding = true
+  showBottomPadding = true,
+  fullWidth = false  // New prop for full-width content (no padding/container)
 }) => {
   const [allAds, setAllAds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -320,19 +321,27 @@ const DashboardLayout = ({
   const hasBottomBanner = showFloatingAds && bottomBannerAds.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 box-border">
+    <div className="min-h-screen flex flex-col bg-gray-100 box-border pt-20">
 
       {/* Navbar */}
-      <div className="w-full box-border">
+      <div className="w-full box-border fixed top-0 left-0 right-0 z-50">
         <Navbar />
       </div>
 
       {/* Main Content */}
       <div className="flex flex-1 w-full box-border">
         <div className="flex flex-1 gap-0 box-border">
-          <main className="flex-1 bg-white shadow rounded-lg p-6 box-border">
-            {children}
-          </main>
+          {fullWidth ? (
+            // Full-width content (no padding, no container)
+            <main className="flex-1 box-border">
+              {children}
+            </main>
+          ) : (
+            // Regular content with padding and container
+            <main className="flex-1 bg-white shadow rounded-lg p-6 box-border">
+              {children}
+            </main>
+          )}
           {showAds && (
             <aside className="hidden lg:block w-64 box-border">
               <AdsPanel />

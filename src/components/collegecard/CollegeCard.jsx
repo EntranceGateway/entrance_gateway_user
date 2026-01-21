@@ -1,6 +1,7 @@
 // src/components/CollegeCard.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ResourceImage } from '../common/ResourceViewer';
 
 const CollegeCard = ({ college }) => {
   const navigate = useNavigate();
@@ -9,18 +10,21 @@ const CollegeCard = ({ college }) => {
     navigate(`/colleges/${college.collegeId}`);
   };
 
+  // Use first picture from collegePictureName array
+  const imageFileName = college.collegePictureName?.[0];
+
   return (
     <div
       onClick={handleClick}
       className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden 
                  hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
     >
-      {college.imageUrl ? (
-        <img
-          src={college.imageUrl}
+      {imageFileName ? (
+        <ResourceImage
+          fileName={imageFileName}
           alt={college.collegeName}
           className="w-full h-48 object-cover"
-          onError={(e) => (e.target.src = '/placeholder-college.jpg')} // fallback
+          fallback="/placeholder-college.jpg"
         />
       ) : (
         <div className="w-full h-48 bg-linear-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
