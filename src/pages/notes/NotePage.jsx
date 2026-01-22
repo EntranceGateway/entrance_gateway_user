@@ -1,18 +1,21 @@
 import { useEffect, useState, useMemo } from "react";
 import { getNotesByFilters } from "../../http/notes";
-import NoteCard from "../../components/common/NoteCard/NoteCard";
-import Pagination from "../../components/Pagination/pagination";
-import { Menu, X } from "lucide-react";
-import UniversalFilter from "../../components/FilterSidebar/FilterSidebar";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
+
+// Import modular components
+import {
+  NotesPageHeader,
+  NotesFilterBar,
+  NoteGridCard,
+  NotesPagination,
+} from "./components";
 
 export default function NotesPage() {
   /* =======================
      UI STATE
   ======================= */
   const [loading, setLoading] = useState(false);
-  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   /* =======================
      DATA STATE
@@ -21,13 +24,33 @@ export default function NotesPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   /* =======================
-     FILTER STATE (SINGLE SOURCE OF TRUTH)
+     FILTER STATE
   ======================= */
-  const [activeFilters, setActiveFilters] = useState({
-    courseNames: ["CSIT"],           // initial default
-    semesters: ["1"],                // initial default
-    affiliations: ["TRIBHUVAN_UNIVERSITY"], // initial default
-  });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedAffiliation, setSelectedAffiliation] = useState(""); // Empty = all affiliations
+
+  // Available courses (can be fetched from API)
+  const availableCourses = ["CSIT", "MBBS", "BBA", "BDS", "BCA"];
+  
+  // Available affiliations
+  const availableAffiliations = [
+    { value: "TRIBHUVAN_UNIVERSITY", label: "Tribhuvan University" },
+    { value: "KATHMANDU_UNIVERSITY", label: "Kathmandu University" },
+    { value: "POKHARA_UNIVERSITY", label: "Pokhara University" },
+    { value: "PURBANCHAL_UNIVERSITY", label: "Purbanchal University" },
+  ];
+
+  /* =======================
+     BUILD ACTIVE FILTERS
+  ======================= */
+  const activeFilters = useMemo(() => ({
+    courseNames: selectedCourse ? [selectedCourse] : [],
+    semesters: selectedSemester ? [selectedSemester] : [],
+    affiliations: selectedAffiliation ? [selectedAffiliation] : [],
+  }), [selectedCourse, selectedSemester, selectedAffiliation]);
 
   /* =======================
      FETCH NOTES BASED ON FILTERS
@@ -51,134 +74,125 @@ export default function NotesPage() {
     }
   };
 
-  const totalPages = useMemo(() => Math.ceil(notes.length / DEFAULT_PAGE_SIZE), [notes.length]);
-  const paginated = useMemo(
-    () => notes.slice((currentPage - 1) * DEFAULT_PAGE_SIZE, currentPage * DEFAULT_PAGE_SIZE),
-    [notes, currentPage]
+  /* =======================
+     SEARCH & PAGINATION
+  ======================= */
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return notes;
+    
+    const query = searchQuery.toLowerCase();
+    return notes.filter(
+      (note) =>
+        note.noteName?.toLowerCase().includes(query) ||
+        note.subject?.toLowerCase().includes(query) ||
+        note.subjectCode?.toLowerCase().includes(query)
+    );
+  }, [notes, searchQuery]);
+
+  const totalPages = useMemo(
+    () => Math.ceil(filteredNotes.length / DEFAULT_PAGE_SIZE),
+    [filteredNotes.length]
   );
+
+  const paginatedNotes = useMemo(
+    () =>
+      filteredNotes.slice(
+        (currentPage - 1) * DEFAULT_PAGE_SIZE,
+        currentPage * DEFAULT_PAGE_SIZE
+      ),
+    [filteredNotes, currentPage]
+  );
+
+  /* =======================
+     HANDLERS
+  ======================= */
+  const handleFilter = () => {
+    fetchNotes();
+  };
 
   /* =======================
      UI
   ======================= */
   return (
     <DashboardLayout>
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Notes</h1>
-          <button
-            onClick={() => setIsFilterVisible((v) => !v)}
-            className="p-2 rounded-lg bg-white shadow-sm border border-slate-200"
-          >
-            {isFilterVisible ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+      <div className="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col transition-colors duration-200 antialiased">
+        <main className="flex-grow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Page Header */}
+            <NotesPageHeader />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
-          {/* Filter Sidebar */}
-          <aside
-            className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:sticky lg:translate-x-0 lg:shadow-md lg:rounded-xl lg:top-8 lg:h-fit
-              ${isFilterVisible ? "translate-x-0" : "-translate-x-full"}
-            `}
-          >
-            {/* Mobile Overlay */}
-            {isFilterVisible && (
-              <div
-                className="fixed inset-0 bg-black/50 lg:hidden"
-                onClick={() => setIsFilterVisible(false)}
-              />
-            )}
+            {/* Filter Bar */}
+            <NotesFilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCourse={selectedCourse}
+              onCourseChange={setSelectedCourse}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+              selectedSemester={selectedSemester}
+              onSemesterChange={setSelectedSemester}
+              selectedAffiliation={selectedAffiliation}
+              onAffiliationChange={setSelectedAffiliation}
+              onFilter={handleFilter}
+              courses={availableCourses}
+              affiliations={availableAffiliations}
+            />
 
-            {/* Filter Content */}
-            <div className="p-6 h-full overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Filters</h2>
-                <button
-                  onClick={() => setIsFilterVisible(false)}
-                  className="lg:hidden p-1 rounded hover:bg-slate-100"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <UniversalFilter
-                onFilterChange={setActiveFilters}
-                initialFilters={activeFilters}
-                showCourseName={true}
-                showSemester={true}
-                showAffiliation={true}
-              />
-
-              {/* Clear Filters Button */}
-              {(activeFilters.courseNames.length > 0 ||
-                activeFilters.semesters.length > 0 ||
-                activeFilters.affiliations.length > 0) && (
-                <button
-                  onClick={() =>
-                    setActiveFilters({
-                      courseNames: [],
-                      semesters: [],
-                      affiliations: [],
-                    })
-                  }
-                  className="mt-6 w-full py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-lg hover:bg-red-50 transition"
-                >
-                  Clear All Filters
-                </button>
-              )}
-            </div>
-          </aside>
-
-          {/* Notes Grid */}
-          <main>
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h1 className="hidden lg:block text-3xl font-bold text-slate-900">Notes</h1>
-              <p className="text-sm text-slate-600">
-                {loading
-                  ? "Loading notes..."
-                  : `${notes.length} note${notes.length !== 1 ? "s" : ""} found`}
-              </p>
-            </div>
-
+            {/* Loading State */}
             {loading ? (
               <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-orange-600" />
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-brand-blue border-t-transparent rounded-full animate-spin" />
+                  <p className="text-gray-500 font-medium">Loading notes...</p>
+                </div>
               </div>
-            ) : notes.length === 0 ? (
+            ) : filteredNotes.length === 0 ? (
+              /* Empty State */
               <div className="text-center py-20">
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 mx-auto mb-6" />
-                <p className="text-lg text-slate-500">
-                  No notes found for the selected filters.
+                <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <span className="material-symbols-outlined text-6xl text-gray-300">
+                    description
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-700 mb-2">
+                  No notes found
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  {searchQuery
+                    ? `No results for "${searchQuery}"`
+                    : "Try adjusting your filters to find notes"}
                 </p>
-                <p className="text-sm text-slate-400 mt-2">
-                  Try adjusting your course, semester, or university filters.
-                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="text-brand-blue hover:text-brand-navy font-medium"
+                  >
+                    Clear search
+                  </button>
+                )}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-[0.3fr_0.8fr] xl:grid-cols-[0.4fr_0.2fr] gap-6">
-                  {paginated.map((note) => (
-                    <NoteCard key={note.noteId} note={note} />
+                {/* Notes Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                  {paginatedNotes.map((note) => (
+                    <NoteGridCard key={note.noteId} note={note} />
                   ))}
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                  page={currentPage}
-                  totalItems={notes.length}
-                  pageSize={DEFAULT_PAGE_SIZE}
+                <NotesPagination
+                  currentPage={currentPage}
                   totalPages={totalPages}
+                  totalItems={filteredNotes.length}
+                  itemsPerPage={DEFAULT_PAGE_SIZE}
                   onPageChange={setCurrentPage}
-                  isDisabled={loading}
-                  showPageInfo={true}
                 />
               </>
             )}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-    </div>
     </DashboardLayout>
   );
 }

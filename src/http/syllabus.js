@@ -17,14 +17,14 @@ export const addSyllabus = async (formData, token) => {
 };
 
 // ===============================
-// GET ALL SYLLABUS
+// GET ALL SYLLABUS WITH PAGINATION
 // ===============================
-export const getSyllabus = async (params = {}, token) => {
+export const getSyllabus = async (page = 0, size = 10, sortBy = "syllabusTitle", sortDir = "asc") => {
   try {
-    return await api.get("/syllabus", {
-      params,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    const response = await api.get("/syllabus", {
+      params: { page, size, sortBy, sortDir }
     });
+    return response.data;
   } catch (err) {
     throw err.response?.data || err;
   }

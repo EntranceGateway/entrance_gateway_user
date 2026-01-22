@@ -16,7 +16,7 @@ export const verifyOtp = async (email, otp) => {
 
 export const reSend = async (email) => {
   try {
-    const response = await api.post("/auth/user/verify-otp", {
+    const response = await api.post("/auth/user/resend-otp", {
       email
     });
     return response.data; // Only return the data from server

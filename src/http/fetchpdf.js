@@ -1,13 +1,17 @@
 import api from "./index"; // axios instance
 
 export const getSingle = async (url, token) => {
- if (!token) throw new Error("Authentication token is missing");
+  const headers = {
+    Accept: "application/pdf",
+  };
+
+  // Only add Authorization header if token is provided
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   const res = await api.get(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/pdf",
-    },
+    headers,
     responseType: "blob",
     withCredentials: true, // ✅ matches access-control-allow-credentials: true
   });

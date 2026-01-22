@@ -7,7 +7,15 @@ export const getTrainings = async (page = 0, size = 10, sortDir = "asc") => {
   const response = await api.get(
     `/trainings?page=${page}&size=${size}&sortBy=trainingStatus&sortDir=${sortDir}`
   );
-  return response.data.data.content;
+  
+  // Return both content and pagination info
+  return {
+    content: response.data.data.content,
+    totalElements: response.data.data.totalElements,
+    totalPages: Math.ceil(response.data.data.totalElements / size),
+    currentPage: page,
+    pageSize: size
+  };
 };
 
 // Get training by ID

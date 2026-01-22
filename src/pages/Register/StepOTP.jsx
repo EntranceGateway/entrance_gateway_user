@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { verifyOtp, reSend } from "../../http/verify-otp";
+
+// Import modular components
+import OTPNavbar from "./components/OTPNavbar";
+import OTPCard from "./components/OTPCard";
 
 /* ---------- STRICT ERROR FILTER ---------- */
 const getUserErrorMessage = (error) => {
@@ -31,6 +33,10 @@ export default function StepOTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const [resendTimer, setResendTimer] = useState(59);
+  const [canResend, setCanResend] = useState(false);
+  const [otpExpiryTimer, setOtpExpiryTimer] = useState(180); // 3 minutes = 180 seconds
+  const [isOtpExpired, setIsOtpExpired] = useState(false);
 
   const inputsRef = useRef([]);
 
@@ -42,6 +48,27 @@ export default function StepOTP() {
     }
     inputsRef.current[0]?.focus();
   }, [email, navigate]);
+
+  /* ---------- RESEND TIMER ---------- */
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [resendTimer]);
+
+  /* ---------- OTP EXPIRY TIMER (3 minutes) ---------- */
+  useEffect(() => {
+    if (otpExpiryTimer > 0 && !isOtpExpired) {
+      const timer = setTimeout(() => setOtpExpiryTimer(otpExpiryTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (otpExpiryTimer === 0 && !isOtpExpired) {
+      setIsOtpExpired(true);
+      setError("OTP has expired. Please request a new code.");
+    }
+  }, [otpExpiryTimer, isOtpExpired]);
 
   /* ---------- HELPERS ---------- */
   const triggerShake = () => {
@@ -95,6 +122,12 @@ export default function StepOTP() {
       return;
     }
 
+    if (isOtpExpired) {
+      setError("OTP has expired. Please request a new code.");
+      triggerShake();
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -102,8 +135,9 @@ export default function StepOTP() {
       const res = await verifyOtp(email, otpString);
       const data = res.data;
 
-      navigate("/");
+      // After successful OTP verification, redirect to login page
       localStorage.removeItem("pendingEmail");
+      navigate("/login");
 
     } catch (err) {
       setError(getUserErrorMessage(err));
@@ -117,7 +151,13 @@ export default function StepOTP() {
 
   /* ---------- RESEND OTP ---------- */
   const resendOTP = async () => {
+    if (!canResend) return;
+
     setError("");
+    setCanResend(false);
+    setResendTimer(59);
+    setIsOtpExpired(false);
+    setOtpExpiryTimer(180); // Reset to 3 minutes
 
     try {
       const res = await reSend(email);
@@ -127,95 +167,56 @@ export default function StepOTP() {
         throw { response: { data } };
       }
 
-      alert("A new OTP has been sent to your email.");
+      // Clear OTP inputs on resend
+      setOtp(["", "", "", "", "", ""]);
+      inputsRef.current[0]?.focus();
     } catch (err) {
       setError(getUserErrorMessage(err));
+      setCanResend(true);
+      setResendTimer(0);
     }
+  };
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8"
-      >
-        <div className="text-center mb-8">
-          <div className="mx-auto mb-4 w-14 h-14 bg-blue-50 flex items-center justify-center rounded-xl">
-            <ShieldCheck className="w-7 h-7 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold">Verification Code</h2>
-          <p className="text-sm text-gray-500 mt-2">{email}</p>
+    <div className="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-gold selection:text-brand-navy">
+      {/* Navbar */}
+      <OTPNavbar />
+
+      {/* Main Content */}
+      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
+          <OTPCard
+            email={email}
+            otp={otp}
+            error={error}
+            shake={shake}
+            isLoading={isLoading}
+            canResend={canResend}
+            resendTimer={resendTimer}
+            otpExpiryTimer={otpExpiryTimer}
+            isOtpExpired={isOtpExpired}
+            inputsRef={inputsRef}
+            onOtpChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onVerify={verifyOTP}
+            onResend={resendOTP}
+            formatTimer={formatTimer}
+            onBackToSignIn={() => navigate("/login")}
+          />
+
+          <p className="text-center text-xs text-gray-400">
+            © 2024 EntranceGateway Education Pvt Ltd. All rights reserved.
+          </p>
         </div>
-
-        <motion.div
-          animate={shake ? { x: [-8, 8, -8, 8, 0] } : {}}
-          className="flex justify-center gap-2 mb-6"
-          onPaste={handlePaste}
-        >
-          {otp.map((digit, i) => (
-            <input
-              key={i}
-              ref={(el) => (inputsRef.current[i] = el)}
-              value={digit}
-              maxLength={1}
-              inputMode="numeric"
-              onChange={(e) => handleChange(e.target.value, i)}
-              onKeyDown={(e) => handleKeyDown(e, i)}
-              className={`w-12 h-14 text-center text-2xl rounded-lg border
-                ${
-                  error
-                    ? "border-red-400 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
-            />
-          ))}
-        </motion.div>
-
-        <div className="h-6 mb-4 flex justify-center">
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-red-500 text-sm"
-              >
-                <AlertCircle className="w-4 h-4" />
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <button
-          onClick={verifyOTP}
-          disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 disabled:bg-gray-400"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Verifying…
-            </>
-          ) : (
-            <>
-              Verify <ArrowRight className="w-5 h-5" />
-            </>
-          )}
-        </button>
-
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Didn’t receive the code?{" "}
-          <button
-            onClick={resendOTP}
-            className="text-blue-600 font-semibold"
-          >
-            Resend
-          </button>
-        </p>
-      </motion.div>
+      </main>
     </div>
   );
 }

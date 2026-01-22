@@ -279,7 +279,6 @@ const DashboardLayout = ({
   children, 
   showAds = false,  // Sidebar ads panel disabled by default
   showFloatingAds = true,  // Show floating ads by default on all pages
-  showBottomPadding = true,
   fullWidth = false  // New prop for full-width content (no padding/container)
 }) => {
   const [allAds, setAllAds] = useState([]);
@@ -351,7 +350,7 @@ const DashboardLayout = ({
       </div>
 
       {/* Footer - Bottom padding when fixed banner is shown */}
-      <div className={`w-full box-border ${showBottomPadding ? 'pb-16' : ''}`}>
+      <div className={`w-full box-border 'pb-16'}`}>
         <Footer />
       </div>
 

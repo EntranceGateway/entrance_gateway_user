@@ -1,25 +1,71 @@
 // notesService.js
-import axios from "axios";
 import api from "./index"; // your configured axios instance
 
-// --- Get notes by filters (courseName, semester, affiliation) ---
-export const getNotesByFilters = async ({ courseNames, semesters, affiliations }) => {
-  if (!courseNames?.length || !semesters?.length || !affiliations?.length) {
-    return { items: [], total: 0 };
-  }
-
+/**
+ * Get all notes with pagination
+ * Endpoint: GET /api/v1/notes
+ * Authentication: Not Required (Public)
+ */
+export const getAllNotes = async (page = 0, size = 20) => {
   try {
-    const params = new URLSearchParams();
-    courseNames.forEach(name => params.append("courseName", name));
-    semesters.forEach(sem => params.append("semester", sem));
-    affiliations.forEach(aff => params.append("affiliation", aff));
+    const response = await api.get("/notes", {
+      params: {
+        page,
+        size,
+      },
+    });
 
-    const response = await api.get("/notes/by-course-semester-affiliation", { params });
-    const content = response.data?.data?.content || [];
+    const data = response.data?.data || {};
     
     return {
-      items: content,
-      total: content.length,
+      content: data.content || [],
+      totalElements: data.totalElements || 0,
+      totalPages: data.totalPages || 0,
+      pageNumber: data.pageNumber || 0,
+      pageSize: data.pageSize || size,
+      isLast: data.isLast || false,
+    };
+  } catch (err) {
+    const message = err.response?.data?.message || err.message || "Failed to fetch notes";
+    throw new Error(message);
+  }
+};
+
+/**
+ * Get notes by filters (courseName, semester, affiliation)
+ * This is a client-side filter on top of getAllNotes
+ */
+export const getNotesByFilters = async ({ 
+  courseNames = [], 
+  semesters = [], 
+  affiliations = [],
+  page = 0,
+  size = 100 // Fetch more to filter client-side
+}) => {
+  try {
+    // Fetch all notes (or a large page)
+    const { content, totalElements } = await getAllNotes(page, size);
+    
+    // If no filters, return all
+    if (!courseNames.length && !semesters.length && !affiliations.length) {
+      return {
+        items: content,
+        total: totalElements,
+      };
+    }
+
+    // Apply client-side filters
+    const filtered = content.filter((note) => {
+      const courseMatch = !courseNames.length || courseNames.includes(note.courseName);
+      const semesterMatch = !semesters.length || semesters.includes(String(note.semester));
+      const affiliationMatch = !affiliations.length || affiliations.includes(note.affiliation);
+      
+      return courseMatch && semesterMatch && affiliationMatch;
+    });
+
+    return {
+      items: filtered,
+      total: filtered.length,
     };
   } catch (err) {
     const message = err.response?.data?.message || err.message || "Failed to fetch notes";
@@ -50,42 +96,33 @@ export const getNotesByCourse = async (courseName, semester, token) => {
   }
 };
 
-// --- Get a single note by ID ---
-export const getNoteById = async (id, token) => {
-  if (!token) throw new Error("Authentication token is missing");
+/**
+ * Get a single note by ID
+ * Endpoint: GET /api/v1/notes/{id}
+ * Authentication: Not Required (Public)
+ */
+export const getNoteById = async (id) => {
   if (!id) throw new Error("Note ID is missing");
 
   try {
-    const res = await api.get(`/notes/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const response = await api.get(`/notes/${id}`);
+    return response.data; // { message, data }
   } catch (err) {
     const message =
       err.response?.data?.message ||
-      err.response?.data ||
       err.message ||
       "Failed to fetch note";
     throw new Error(message);
   }
 };
-export const fetchNoteDetails = async (id, token) => {
-  if (!token) throw new Error("Authentication token is missing");
-  if (!id) throw new Error("Note ID is missing");
 
-  try {
-    const res = await api.get(`/notes/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
-  } catch (err) {
-    const message =
-      err.response?.data?.message ||
-      err.response?.data ||
-      err.message ||
-      "Failed to fetch note";
-    throw new Error(message);
-  }
+/**
+ * Fetch note details (alias for getNoteById)
+ * Endpoint: GET /api/v1/notes/{id}
+ * Authentication: Not Required (Public)
+ */
+export const fetchNoteDetails = async (id) => {
+  return getNoteById(id);
 };
 
 export const fetchRelatedNotes = async (id, token) => {

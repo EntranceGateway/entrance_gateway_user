@@ -15,12 +15,12 @@ import Login from "./pages/Register/Userlogin";
 import StepRegister from "./pages/Register/Register";
 import StepOTP from "./pages/Register/StepOTP";
 import NotesGrid from "./pages/notes/notesGrid";
-import NoteDetails from "./pages/notes/NoteDetails";
+import NoteDetails from "./pages/notes/detail/NoteDetailPage";
 import CoursesPage from "./pages/notes/course/CoursesPage";
 import CourseDetailPage from "./pages/courses/CourseDetailPage";
 import NotesPage from "./pages/notes/NotePage";
-import SyllabusPage from "./pages/Register/SyllabusPage";
-import SyllabusDetails from "./pages/syllabus/SyllabusDetails";
+import SyllabusPage from "./pages/syllabus/SyllabusPage";
+import SyllabusDetailPage from "./pages/syllabus/SyllabusDetailPage";
 import CollegeDetailPage from "./pages/Colleges/collegesDetail";
 import CollegesPage from "./pages/Colleges/CollegePages";
 import Blogs from "./pages/blogs/BlogPage";
@@ -114,37 +114,6 @@ function Notification({ message, onClose }) {
 }
 
 // ────────────────────────────────────────────────
-// Protected Route Component
-// ────────────────────────────────────────────────
-function ProtectedRoute({ children }) {
-  const location = useLocation();
-  const authenticated = isAuthenticated();
-  const [showNotification, setShowNotification] = useState(false);
-
-  useEffect(() => {
-    if (!authenticated) {
-      setShowNotification(true);
-    }
-  }, [authenticated]);
-
-  if (!authenticated) {
-    return (
-      <>
-        {showNotification && (
-          <Notification
-            message="Please login first to access this resource"
-            onClose={() => setShowNotification(false)}
-          />
-        )}
-        <Navigate to="/login" state={{ from: location }} replace />
-      </>
-    );
-  }
-
-  return <>{children}</>;
-}
-
-// ────────────────────────────────────────────────
 // Loading Screen Component
 // ────────────────────────────────────────────────
 function LoadingScreen() {
@@ -227,64 +196,22 @@ function AppRoutes() {
         <Route path="/" element={<Dashboard />} />
 
         {/* ═══════════════════════════════════════════
-            Protected User Routes
+            User Routes
         ═══════════════════════════════════════════ */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/change-password"
-          element={
-            <ProtectedRoute>
-              <ChangePassword />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/change-password" element={<ChangePassword />} />
 
         {/* ═══════════════════════════════════════════
-            Protected Notice Routes
+            Notice Routes
         ═══════════════════════════════════════════ */}
-        <Route
-          path="/notices"
-          element={
-            <ProtectedRoute>
-              <AddNotice />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notices/:id"
-          element={
-            <ProtectedRoute>
-              <NoticeDetails />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/notices" element={<AddNotice />} />
+        <Route path="/notices/:id" element={<NoticeDetails />} />
 
         {/* ═══════════════════════════════════════════
-            Protected Training Routes
+            Training Routes
         ═══════════════════════════════════════════ */}
-        <Route
-          path="/training"
-          element={
-            <ProtectedRoute>
-              <TrainingsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/training/:id"
-          element={
-            <ProtectedRoute>
-              <TrainingDetail />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/training" element={<TrainingsPage />} />
+        <Route path="/training/:id" element={<TrainingDetail />} />
 
         {/* ═══════════════════════════════════════════
             Notes Routes
@@ -303,7 +230,7 @@ function AppRoutes() {
             Syllabus Routes
         ═══════════════════════════════════════════ */}
         <Route path="/syllabus" element={<SyllabusPage />} />
-        <Route path="/syllabus/:id" element={<SyllabusDetails />} />
+        <Route path="/syllabus/:id" element={<SyllabusDetailPage />} />
 
         {/* ═══════════════════════════════════════════
             Colleges Routes

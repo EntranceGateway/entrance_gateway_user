@@ -27,6 +27,9 @@ import { getInitials } from "../../utils/formatters";
 // Primary navigation - shown directly in navbar
 const PRIMARY_LINKS = [
   { name: "Home", path: "/", icon: Home },
+  { name: "Syllabus", path: "/syllabus", icon: ScrollText },
+  { name: "Notes", path: "/notes", icon: NotebookPen },
+  { name: "Old Questions", path: "/old-questions", icon: FileQuestion },
   { name: "Colleges", path: "/colleges", icon: GraduationCap },
   { name: "Courses", path: "/courses", icon: BookOpen },
   { name: "Blogs", path: "/blogs", icon: FileText },
@@ -80,20 +83,20 @@ const Navbar = () => {
             <span className="font-display font-bold text-2xl text-accent tracking-tight">EntranceGateway</span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-10">
+          <div className="hidden md:flex items-center space-x-6">
             {PRIMARY_LINKS.map((link) => {
               const IconComponent = link.icon;
               return (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-base font-semibold transition-colors flex items-center gap-1.5 ${
+                  className={`text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                     location.pathname === link.path
                       ? "text-accent"
                       : "text-gray-700 hover:text-accent"
                   }`}
                 >
-                  <IconComponent className="w-5 h-5 opacity-70" />
+                  <IconComponent className="w-4 h-4 opacity-70" />
                   {link.name}
                 </Link>
               );
@@ -152,8 +155,8 @@ const Navbar = () => {
                 </div>
               ) : (
                 <>
-                  <Link to="/login" className="text-base font-semibold text-gray-600 hover:text-accent transition-colors">Login</Link>
-                  <Link to="/signup" className="bg-accent hover:bg-secondary text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-md hover:shadow-lg shadow-accent/20">Sign Up</Link>
+                  <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-accent transition-colors">Login</Link>
+                  <Link to="/signup" className="bg-accent hover:bg-secondary text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md hover:shadow-lg shadow-accent/20">Sign Up</Link>
                 </>
               )
             )}
