@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Clock, Users, BookOpen } from 'lucide-react';
+import bookImage from '../../../../assets/book.jpg';
 
 const AFFILIATION_LABELS = {
   TRIBHUVAN_UNIVERSITY: 'Tribhuvan University',
@@ -27,21 +28,29 @@ export function CollegeCourseCard({ course }) {
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-amber-400/50 transition-colors cursor-pointer group"
+      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-amber-400/50 transition-all cursor-pointer group hover:shadow-md"
     >
+      {/* Book Image */}
+      <div className="relative h-32 sm:h-40 overflow-hidden">
+        <img 
+          src={bookImage} 
+          alt={course.courseName}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <span className={`absolute top-3 right-3 ${levelConfig.bgClass} px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap shadow-sm`}>
+          {levelConfig.label}
+        </span>
+      </div>
+
       <div className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3 sm:mb-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors truncate">
-              {course.courseName}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-500 truncate">
-              {course.description || `${course.courseName} Program`}
-            </p>
-          </div>
-          <span className={`${levelConfig.bgClass} px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap`}>
-            {levelConfig.label}
-          </span>
+        <div className="mb-3 sm:mb-4">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors line-clamp-1">
+            {course.courseName}
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 mt-1">
+            {course.description || `${course.courseName} Program`}
+          </p>
         </div>
         
         <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">

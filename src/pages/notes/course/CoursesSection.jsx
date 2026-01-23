@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { getCoursesSorted } from "../../../http/course";
+import bookImage from "../../../assets/book.jpg";
 
 // Map backend enum keys to display names
 const AFFILIATION_OPTIONS = [
@@ -14,8 +15,6 @@ const AFFILIATION_OPTIONS = [
   { value: "MID_WESTERN_UNIVERSITY", label: "Mid Western University" },
   { value: "FAR_WESTERN_UNIVERSITY", label: "Far Western University" },
 ];
-
-const DEFAULT_COURSE_IMAGE = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 
 export default function CoursesSection() {
   const [allCourses, setAllCourses] = useState([]);
@@ -187,7 +186,7 @@ export default function CoursesSection() {
                   {/* Course Image */}
                   <div className="relative h-60 overflow-hidden">
                     <img
-                      src={course.imageUrl || DEFAULT_COURSE_IMAGE}
+                      src={bookImage}
                       alt={course.courseName}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       loading="lazy"

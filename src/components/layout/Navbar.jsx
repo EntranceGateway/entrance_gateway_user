@@ -51,7 +51,7 @@ const Navbar = () => {
             <div className="bg-accent/10 p-1.5 sm:p-2 rounded-lg">
               <span className="material-symbols-outlined text-accent text-xl sm:text-2xl">school</span>
             </div>
-            <span className="font-display font-bold text-lg sm:text-xl text-accent tracking-tight hidden xs:inline">
+            <span className="font-display font-bold text-lg sm:text-xl text-accent tracking-tight">
               EntranceGateway
             </span>
           </Link>

@@ -5,13 +5,9 @@ import { getCourses } from "../../../http/course";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { DEFAULT_PAGE_SIZE } from "../../../constants/pagination";
 import ResourceImage from "../../../components/common/ResourceViewer/ResourceImage";
+import bookImage from "../../../../src/assets/book.jpg";
 
-const COURSE_IMAGES = {
-  "BCA": "https://lh3.googleusercontent.com/aida-public/AB6AXuCn1Td15PvYN-yDnpL378gV0qW4IMiHo5icSYuAJubbwJZJPNPfR_3nMnpzzyuVqaTvJsfMz8QpsTXVtfcanIRyJB4Gma9vepU_sEdiupzyPhVDB6g0nyl7CaY8xcuz_vQZV8ZbPYaGzlEaAr8bd1JPWcQvyP-FRHp-FbjpGnanYPiySOxipyThHl-cjYROl-OMB2rLBGV713HECZuKERStLliFWzf0BeH0SqJVZsy8QOSej3Rx1b8dAnXLDve_-ZNrZ4ZbyEZjhls",
-  "CSIT": "https://lh3.googleusercontent.com/aida-public/AB6AXuBeUVqD8DDtRcRfnObsYbW3fJ8zwFEx2poiLgyuyuG_EmbYvxgHIbJSGAVBZ9_cw0A_Sw4HW08MXaf6EXZXx01wfAnumosQMg62mygq8V5JcdS7wLTkWFY7AHSU-w_FQvtNGYWlvcj02-pnAkLZGUzOjHRBX_HXEuwMJsoyABfaXJOsVDxHKumluOf5rLeo6Ywpp1UbyHlxE4Ue5J8RT9Is2ZXJ0qI8b0A_X3I8QFkhzng8h5wqhwiF6df0H0SY4tboVMV-duK2y9A",
-  "Management": "https://lh3.googleusercontent.com/aida-public/AB6AXuCsTiys5nXFbqVw60sqFYpGPn4jhDC29_se7LGkrnSvAbz72vexzPq_uiguebokJzz43FfnneYCgH4sJL3fdnZZgoXCs61ZAa38O9HbUaPQ0E_3MtyXvTQ16ILWLCRTmr7_kcN9rrd3PdKXd2ciy_iR2wzvIAg_O4VH1NgKSja6E1y1ugb0yIlfXTYRaYUgl1lF179YJGCjnHjNV7wMuETli9sK-POZ4wIRrLIwVycP2zSNDSNOD1HRbyVamZvFKNsUBDCXNtQGcFw",
-  "default": "https://lh3.googleusercontent.com/aida-public/AB6AXuBKJvzzNiNHcWkfeGuSJLp3McD_vw4CeM7I0Vf1PtSOWOMTeM7fhnimuVaA8sInFrd95WNMm_7iaVetklZe1kWKRNz7rrLRDEBDzMNSPVZdgVHlcm86x7idWYbrZgkaRrrNxJRJ61I1HXa4kQ97sF_W8o7AFFwau-tQJkvlBlmiC4C8D9ZAfc5gsv8ENJUZcJf2qzETusvmP4quWf76VWr9tsZTicnLXoLjjSQTJB4aw8KJrMBYU4j2MD55t1xIOIcI7eRZQiztOr8",
-};
+
 
 const LEVEL_CONFIG = {
   "BACHELOR": { label: "Bachelor", color: "bg-brand-blue/90" },
@@ -57,7 +53,8 @@ const CourseCard = ({ course }) => {
   const navigate = useNavigate();
   const levelConfig = LEVEL_CONFIG[course.level] || LEVEL_CONFIG.default;
   const iconConfig = ICON_CONFIG[course.name] || ICON_CONFIG.default;
-  const image = COURSE_IMAGES[course.name] || COURSE_IMAGES.default;
+  // Use book image for all courses
+  const image = bookImage;
   
   // Get first college logo if available
   const collegeLogoFileName = course.collegeLogos?.[0];
