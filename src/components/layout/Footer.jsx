@@ -17,9 +17,9 @@ const SUPPORT_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  { icon: Facebook, href: "https://www.facebook.com/share/1Go6gjNUuc/", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/entrance_gateway", label: "Instagram" },
+  { icon: Youtube, href: "https://youtube.com/@entrancegateway8834", label: "YouTube" },
 ];
 
 export default function Footer() {
@@ -47,6 +47,8 @@ export default function Footer() {
                 <a
                   key={social.label}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
                   className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-accent transition-colors"
                 >
@@ -89,11 +91,14 @@ export default function Footer() {
             <ul className="space-y-4 text-sm mb-6">
               <li className="flex items-start gap-3 text-gray-400">
                 <span className="material-icons-round text-primary text-lg mt-0.5">location_on</span>
-                <span>Putalisadak, Kathmandu,<br />Nepal</span>
+                <span>Sukedhara, Kathmandu,<br />Nepal</span>
               </li>
-              <li className="flex items-center gap-3 text-gray-400">
-                <span className="material-icons-round text-primary text-lg">phone</span>
-                <span>+977 9800000000</span>
+              <li className="flex items-start gap-3 text-gray-400">
+                <span className="material-icons-round text-primary text-lg mt-0.5">phone</span>
+                <div className="flex flex-col gap-1">
+                  <span>+977 9701031808</span>
+                  <span>+977 9844874516</span>
+                </div>
               </li>
               <li className="flex items-center gap-3 text-gray-400">
                 <span className="material-icons-round text-primary text-lg">email</span>
@@ -115,8 +120,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-          <p>&copy; 2025 EntranceGateway. All rights reserved.</p>
+        <div className="border-t border-gray-800 pt-8 pb-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+          <p>&copy; 2025 Samasta Groups Pvt. Ltd.. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link to="/cookies" className="hover:text-white transition-colors">Cookies</Link>

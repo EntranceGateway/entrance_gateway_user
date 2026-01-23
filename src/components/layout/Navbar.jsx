@@ -185,8 +185,8 @@ const Navbar = () => {
                 <Link to="/login" className="text-sm font-semibold text-gray-700 hover:text-accent transition-colors whitespace-nowrap">
                   Log in <span aria-hidden="true">&rarr;</span>
                 </Link>
-                <Link to="/signup" className="bg-accent hover:bg-secondary text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap">
-                  Sign Up
+                <Link to="/signup" className="text-sm font-semibold text-gray-700 hover:text-accent transition-colors whitespace-nowrap">
+                  Sign up <span aria-hidden="true">&rarr;</span>
                 </Link>
               </>
             )

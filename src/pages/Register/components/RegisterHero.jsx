@@ -12,17 +12,17 @@ export default function RegisterHero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-12 flex flex-col h-full justify-between text-white">
+      <div className="relative z-10 p-12 flex flex-col h-full justify-center text-white">
         {/* Logo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 absolute top-12 left-12">
           <span className="material-icons-round text-brand-gold text-3xl">school</span>
           <span className="font-bold text-xl tracking-tight font-roboto">
             EntranceGateway
           </span>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-md mb-12">
+        {/* Main Content - Centered */}
+        <div className="max-w-md">
           <h2 className="text-4xl font-bold font-roboto leading-tight mb-6">
             Your journey to <br />
             <span className="text-brand-gold">academic excellence</span>
@@ -55,11 +55,6 @@ export default function RegisterHero() {
               <span>Expert Mentors</span>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-xs text-gray-400">
-          © 2024 EntranceGateway Education Pvt Ltd.
         </div>
       </div>
     </div>
