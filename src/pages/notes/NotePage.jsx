@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { getNotesByFilters } from "../../http/notes";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { DEFAULT_PAGE_SIZE } from "../../constants/pagination";
+import { UNIVERSITIES } from "../../constants/universities";
 
 // Import modular components
 import {
@@ -21,7 +22,9 @@ export default function NotesPage() {
      DATA STATE
   ======================= */
   const [notes, setNotes] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // API uses 0-based indexing
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   /* =======================
      FILTER STATE
@@ -30,52 +33,52 @@ export default function NotesPage() {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
-  const [selectedAffiliation, setSelectedAffiliation] = useState(""); // Empty = all affiliations
+  const [selectedAffiliation, setSelectedAffiliation] = useState("");
 
   // Available courses (can be fetched from API)
   const availableCourses = ["CSIT", "MBBS", "BBA", "BDS", "BCA"];
   
-  // Available affiliations
-  const availableAffiliations = [
-    { value: "TRIBHUVAN_UNIVERSITY", label: "Tribhuvan University" },
-    { value: "KATHMANDU_UNIVERSITY", label: "Kathmandu University" },
-    { value: "POKHARA_UNIVERSITY", label: "Pokhara University" },
-    { value: "PURBANCHAL_UNIVERSITY", label: "Purbanchal University" },
-  ];
-
-  /* =======================
-     BUILD ACTIVE FILTERS
-  ======================= */
-  const activeFilters = useMemo(() => ({
-    courseNames: selectedCourse ? [selectedCourse] : [],
-    semesters: selectedSemester ? [selectedSemester] : [],
-    affiliations: selectedAffiliation ? [selectedAffiliation] : [],
-  }), [selectedCourse, selectedSemester, selectedAffiliation]);
+  // Available affiliations from constants
+  const availableAffiliations = UNIVERSITIES.map(uni => ({
+    value: uni.value,
+    label: uni.label
+  }));
 
   /* =======================
      FETCH NOTES BASED ON FILTERS
   ======================= */
   useEffect(() => {
     fetchNotes();
-    setCurrentPage(1); // Reset to first page when filters change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilters]);
+  }, [currentPage, selectedCourse, selectedSemester, selectedAffiliation]);
 
   const fetchNotes = async () => {
     try {
       setLoading(true);
-      const { items } = await getNotesByFilters(activeFilters);
-      setNotes(items);
+      const response = await getNotesByFilters({
+        courseName: selectedCourse,
+        semester: selectedSemester,
+        affiliation: selectedAffiliation,
+        page: currentPage,
+        size: DEFAULT_PAGE_SIZE,
+        sortBy: "noteName",
+        sortDir: "asc"
+      });
+      
+      setNotes(response.data.content || []);
+      setTotalPages(response.data.totalPages || 0);
+      setTotalElements(response.data.totalElements || 0);
     } catch (err) {
       console.error("Failed to fetch notes", err);
       setNotes([]);
+      setTotalPages(0);
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
   };
 
   /* =======================
-     SEARCH & PAGINATION
+     SEARCH (CLIENT-SIDE)
   ======================= */
   const filteredNotes = useMemo(() => {
     if (!searchQuery.trim()) return notes;
@@ -89,24 +92,35 @@ export default function NotesPage() {
     );
   }, [notes, searchQuery]);
 
-  const totalPages = useMemo(
-    () => Math.ceil(filteredNotes.length / DEFAULT_PAGE_SIZE),
-    [filteredNotes.length]
-  );
-
-  const paginatedNotes = useMemo(
-    () =>
-      filteredNotes.slice(
-        (currentPage - 1) * DEFAULT_PAGE_SIZE,
-        currentPage * DEFAULT_PAGE_SIZE
-      ),
-    [filteredNotes, currentPage]
-  );
-
   /* =======================
      HANDLERS
   ======================= */
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage - 1); // Convert to 0-based for API
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    // Reset to first page when filters change
+    setCurrentPage(0);
+    
+    switch (filterType) {
+      case 'course':
+        setSelectedCourse(value);
+        break;
+      case 'semester':
+        setSelectedSemester(value);
+        break;
+      case 'affiliation':
+        setSelectedAffiliation(value);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleFilter = () => {
+    // Reset to first page and refetch
+    setCurrentPage(0);
     fetchNotes();
   };
 
@@ -126,13 +140,13 @@ export default function NotesPage() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               selectedCourse={selectedCourse}
-              onCourseChange={setSelectedCourse}
+              onCourseChange={(value) => handleFilterChange('course', value)}
               selectedYear={selectedYear}
               onYearChange={setSelectedYear}
               selectedSemester={selectedSemester}
-              onSemesterChange={setSelectedSemester}
+              onSemesterChange={(value) => handleFilterChange('semester', value)}
               selectedAffiliation={selectedAffiliation}
-              onAffiliationChange={setSelectedAffiliation}
+              onAffiliationChange={(value) => handleFilterChange('affiliation', value)}
               onFilter={handleFilter}
               courses={availableCourses}
               affiliations={availableAffiliations}
@@ -175,18 +189,18 @@ export default function NotesPage() {
               <>
                 {/* Notes Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                  {paginatedNotes.map((note) => (
+                  {filteredNotes.map((note) => (
                     <NoteGridCard key={note.noteId} note={note} />
                   ))}
                 </div>
 
                 {/* Pagination */}
                 <NotesPagination
-                  currentPage={currentPage}
+                  currentPage={currentPage + 1} // Convert to 1-based for display
                   totalPages={totalPages}
-                  totalItems={filteredNotes.length}
+                  totalItems={totalElements}
                   itemsPerPage={DEFAULT_PAGE_SIZE}
-                  onPageChange={setCurrentPage}
+                  onPageChange={handlePageChange}
                 />
               </>
             )}

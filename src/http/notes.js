@@ -32,41 +32,36 @@ export const getAllNotes = async (page = 0, size = 20) => {
 };
 
 /**
- * Get notes by filters (courseName, semester, affiliation)
- * This is a client-side filter on top of getAllNotes
+ * Get notes by filters (server-side filtering)
+ * Endpoint: GET /api/v1/notes/filter
+ * Authentication: Not Required (Public)
  */
 export const getNotesByFilters = async ({ 
-  courseNames = [], 
-  semesters = [], 
-  affiliations = [],
+  courseName = "",
+  semester = "",
+  affiliation = "",
+  syllabusTitle = "",
   page = 0,
-  size = 100 // Fetch more to filter client-side
+  size = 10,
+  sortBy = "noteName",
+  sortDir = "asc"
 }) => {
   try {
-    // Fetch all notes (or a large page)
-    const { content, totalElements } = await getAllNotes(page, size);
-    
-    // If no filters, return all
-    if (!courseNames.length && !semesters.length && !affiliations.length) {
-      return {
-        items: content,
-        total: totalElements,
-      };
-    }
-
-    // Apply client-side filters
-    const filtered = content.filter((note) => {
-      const courseMatch = !courseNames.length || courseNames.includes(note.courseName);
-      const semesterMatch = !semesters.length || semesters.includes(String(note.semester));
-      const affiliationMatch = !affiliations.length || affiliations.includes(note.affiliation);
-      
-      return courseMatch && semesterMatch && affiliationMatch;
-    });
-
-    return {
-      items: filtered,
-      total: filtered.length,
+    const params = {
+      page,
+      size,
+      sortBy,
+      sortDir
     };
+
+    // Only add filter params if they have values
+    if (courseName) params.courseName = courseName;
+    if (semester) params.semester = semester;
+    if (affiliation) params.affiliation = affiliation;
+    if (syllabusTitle) params.syllabusTitle = syllabusTitle;
+
+    const response = await api.get("/notes/filter", { params });
+    return response.data;
   } catch (err) {
     const message = err.response?.data?.message || err.message || "Failed to fetch notes";
     throw new Error(message);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSyllabus } from "../../http/syllabus";
+import { getSyllabusByFilters } from "../../http/syllabus";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import SyllabusTable from "../../components/syllabus/SyllabusTable";
 import SyllabusFilters from "../../components/syllabus/SyllabusFilters";
@@ -16,15 +16,24 @@ export default function SyllabusPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedAffiliation, setSelectedAffiliation] = useState("");
 
   useEffect(() => {
     fetchSyllabus();
-  }, [currentPage]);
+  }, [currentPage, selectedCourse, selectedSemester, selectedAffiliation]);
 
   const fetchSyllabus = async () => {
     try {
       setLoading(true);
-      const response = await getSyllabus(currentPage, PAGE_SIZE, "syllabusTitle", "asc");
+      const response = await getSyllabusByFilters({
+        affiliation: selectedAffiliation,
+        courseName: selectedCourse,
+        semester: selectedSemester,
+        page: currentPage,
+        size: PAGE_SIZE,
+        sortBy: "syllabusTitle",
+        sortDir: "asc"
+      });
       
       setSyllabi(response.data.content || []);
       setTotalPages(response.data.totalPages || 0);
@@ -39,21 +48,39 @@ export default function SyllabusPage() {
     }
   };
 
-  // Client-side filtering
+  // Client-side search filtering (only for search query)
   const filteredSyllabi = syllabi.filter((syllabus) => {
-    const matchesSearch = !searchQuery.trim() || 
-      syllabus.subjectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      syllabus.courseCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      syllabus.syllabusTitle?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!searchQuery.trim()) return true;
     
-    const matchesCourse = !selectedCourse || syllabus.courseName === selectedCourse;
-    const matchesSemester = !selectedSemester || syllabus.semester === parseInt(selectedSemester);
-    
-    return matchesSearch && matchesCourse && matchesSemester;
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      syllabus.subjectName?.toLowerCase().includes(searchLower) ||
+      syllabus.courseCode?.toLowerCase().includes(searchLower) ||
+      syllabus.syllabusTitle?.toLowerCase().includes(searchLower)
+    );
   });
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage - 1); // Convert to 0-based for API
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    // Reset to first page when filters change
+    setCurrentPage(0);
+    
+    switch (filterType) {
+      case 'course':
+        setSelectedCourse(value);
+        break;
+      case 'semester':
+        setSelectedSemester(value);
+        break;
+      case 'affiliation':
+        setSelectedAffiliation(value);
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -68,9 +95,11 @@ export default function SyllabusPage() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             selectedCourse={selectedCourse}
-            onCourseChange={setSelectedCourse}
+            onCourseChange={(value) => handleFilterChange('course', value)}
             selectedSemester={selectedSemester}
-            onSemesterChange={setSelectedSemester}
+            onSemesterChange={(value) => handleFilterChange('semester', value)}
+            selectedAffiliation={selectedAffiliation}
+            onAffiliationChange={(value) => handleFilterChange('affiliation', value)}
           />
 
           {/* Table */}

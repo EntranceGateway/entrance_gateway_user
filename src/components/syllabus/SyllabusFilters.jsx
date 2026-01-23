@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { UNIVERSITIES } from "../../constants/universities";
 
 const COURSES = [
   { value: "", label: "All Programs" },
@@ -21,6 +21,11 @@ const SEMESTERS = [
   { value: "8", label: "Eighth Semester" },
 ];
 
+const AFFILIATIONS = [
+  { value: "", label: "All Affiliations" },
+  ...UNIVERSITIES
+];
+
 export default function SyllabusFilters({
   searchQuery,
   onSearchChange,
@@ -28,12 +33,14 @@ export default function SyllabusFilters({
   onCourseChange,
   selectedSemester,
   onSemesterChange,
+  selectedAffiliation,
+  onAffiliationChange,
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 mb-6 md:mb-8">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
         {/* Search Input */}
-        <div className="md:col-span-6 relative">
+        <div className="md:col-span-4 relative">
           <label
             className="block text-xs font-medium text-gray-500 mb-1"
             htmlFor="search"
@@ -55,6 +62,35 @@ export default function SyllabusFilters({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* Affiliation Dropdown */}
+        <div className="md:col-span-3">
+          <label
+            className="block text-xs font-medium text-gray-500 mb-1"
+            htmlFor="affiliation"
+          >
+            Affiliation
+          </label>
+          <div className="relative">
+            <select
+              className="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-brand-blue sm:text-sm sm:leading-6 appearance-none bg-white"
+              id="affiliation"
+              value={selectedAffiliation}
+              onChange={(e) => onAffiliationChange(e.target.value)}
+            >
+              {AFFILIATIONS.map((affiliation) => (
+                <option key={affiliation.value} value={affiliation.value}>
+                  {affiliation.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <span className="material-icons-round text-gray-400 text-xl">
+                expand_more
+              </span>
+            </div>
           </div>
         </div>
 
@@ -88,7 +124,7 @@ export default function SyllabusFilters({
         </div>
 
         {/* Semester Dropdown */}
-        <div className="md:col-span-3">
+        <div className="md:col-span-2">
           <label
             className="block text-xs font-medium text-gray-500 mb-1"
             htmlFor="semester"

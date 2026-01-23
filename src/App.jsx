@@ -29,11 +29,10 @@ import AddNotice from "./pages/notice/addNotice";
 import NoticeDetails from "./pages/notice/noticeDetails";
 import BlogP from "./components/Pagination/hh";
 import ContactPage from "./pages/Contact/contactPage";
-import ChangePassword from "./pages/Password/changePassword";
 import ForgotPassword from "./pages/Password/ForgotPassword";
 import ProfilePage from "./pages/profile/profilePage";
 import OldQuestionsPage from "./pages/oldQuestions/OldQuestionsPage";
-import OldQuestionDetails from "./pages/oldQuestions/OldQuestionDetails";
+import OldQuestionDetailPage from "./pages/oldQuestions/OldQuestionDetailPage";
 import TrainingsPage from "./pages/Training/TrainingsPage";
 import TrainingDetail from "./pages/Training/TrainingDetail";
 
@@ -199,7 +198,6 @@ function AppRoutes() {
             User Routes
         ═══════════════════════════════════════════ */}
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/change-password" element={<ChangePassword />} />
 
         {/* ═══════════════════════════════════════════
             Notice Routes
@@ -249,7 +247,7 @@ function AppRoutes() {
             Old Questions Routes
         ═══════════════════════════════════════════ */}
         <Route path="/old-questions" element={<OldQuestionsPage />} />
-        <Route path="/old-questions/:id" element={<OldQuestionDetails />} />
+        <Route path="/old-questions/:id" element={<OldQuestionDetailPage />} />
 
         {/* ═══════════════════════════════════════════
             Contact Route

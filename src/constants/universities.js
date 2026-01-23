@@ -1,4 +1,5 @@
 export const UNIVERSITIES = [
+  { label: "NEB", value: "NEB" },
   { label: "Tribhuwan University", value: "TRIBHUVAN_UNIVERSITY" },
   { label: "Kathmandu University", value: "KATHMANDU_UNIVERSITY" },
   { label: "Pokhara University", value: "POKHARA_UNIVERSITY" },

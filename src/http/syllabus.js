@@ -103,24 +103,30 @@ export const deleteSyllabus = async (id, token) => {
 // ===============================
 // GET SYLLABUS BY FILTERS
 // ===============================
-export const getSyllabusByFilters = async ({ courseNames, semesters, affiliations }) => {
-  if (!courseNames?.length || !semesters?.length || !affiliations?.length) {
-    return { items: [], total: 0 };
-  }
-
+export const getSyllabusByFilters = async ({
+  affiliation = "",
+  courseName = "",
+  semester = "",
+  page = 0,
+  size = 10,
+  sortBy = "syllabusTitle",
+  sortDir = "asc"
+}) => {
   try {
-    const params = new URLSearchParams();
-    courseNames.forEach(name => params.append("courseName", name));
-    semesters.forEach(sem => params.append("semester", sem));
-    affiliations.forEach(aff => params.append("affiliation", aff));
+    const params = {
+      page,
+      size,
+      sortBy,
+      sortDir
+    };
+
+    // Only add filter params if they have values
+    if (affiliation) params.affiliation = affiliation;
+    if (courseName) params.courseName = courseName;
+    if (semester) params.semester = semester;
 
     const response = await api.get("/syllabus/by-affiliation/by-course/semester", { params });
-    const content = response.data?.data?.content || [];
-    
-    return {
-      items: content,
-      total: content.length,
-    };
+    return response.data;
   } catch (err) {
     throw err.response?.data || err;
   }
