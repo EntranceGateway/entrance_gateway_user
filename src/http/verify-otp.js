@@ -7,10 +7,10 @@ export const verifyOtp = async (email, otp) => {
       email,
       otp,
     });
-    return response.data; // Only return the data from server
+    return response.data;
   } catch (err) {
-    // Throws backend error if available, else full error
-    throw err.response?.data || err;
+    // Re-throw the full error object for proper error handling
+    throw err;
   }
 };
 
@@ -19,9 +19,9 @@ export const reSend = async (email) => {
     const response = await api.post("/auth/user/resend-otp", {
       email
     });
-    return response.data; // Only return the data from server
+    return response.data;
   } catch (err) {
-    // Throws backend error if available, else full error
-    throw err.response?.data || err;
+    // Re-throw the full error object for proper error handling
+    throw err;
   }
 };

@@ -52,36 +52,24 @@ export default function Register() {
       let fieldErrors = {};
       let genericMessage = null;
 
-      if (typeof backendError === "object" && backendError !== null && !Array.isArray(backendError)) {
-        Object.keys(backendError).forEach((key) => {
-          if (["fullname", "email", "contact", "address", "dob", "interested", "latestQualification", "password"].includes(key)) {
-            fieldErrors[key] = backendError[key];
-          } else if (key === "error" || key === "message") {
-            genericMessage = backendError[key];
-          }
-        });
-      }
-
-      if (typeof backendError === "string") {
-        genericMessage = backendError;
+      // Handle validation errors (errors object from API)
+      if (backendError.errors && typeof backendError.errors === 'object') {
+        fieldErrors = backendError.errors;
+        // Don't show generic message if we have field errors
       } else if (backendError.message) {
+        // Handle simple message errors (409 Conflict, etc.)
         genericMessage = backendError.message;
-      } else if (backendError.error) {
-        genericMessage = backendError.error;
+      } else if (typeof backendError === 'string') {
+        genericMessage = backendError;
       }
 
-      if (genericMessage && !Object.keys(fieldErrors).length) {
-        const lower = genericMessage.toLowerCase();
-        if (lower.includes("email")) fieldErrors.email = genericMessage;
-        else if (lower.includes("contact") || lower.includes("phone") || lower.includes("mobile")) fieldErrors.contact = genericMessage;
-        else if (lower.includes("password")) fieldErrors.password = genericMessage;
-        else genericMessage = genericMessage;
-      }
-
+      // Set field errors
       if (Object.keys(fieldErrors).length > 0) {
         setErrors((prev) => ({ ...prev, ...fieldErrors }));
       }
-      if (genericMessage && !Object.keys(fieldErrors).length) {
+      
+      // Set generic error message
+      if (genericMessage) {
         setGeneralError(genericMessage);
       }
     } else {

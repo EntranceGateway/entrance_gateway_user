@@ -25,13 +25,44 @@ const Login = () => {
     }
   }, [status, accessToken, navigate, dispatch]);
 
+  // Format error for display
+  const getErrorMessage = () => {
+    if (!error) return null;
+    
+    // If error has validation errors, show the main message
+    if (error.errors && typeof error.errors === 'object') {
+      return error.message || "Please check the form for errors";
+    }
+    
+    // If error is an object with message
+    if (error.message) {
+      return error.message;
+    }
+    
+    // If error is a string
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    return "Login failed. Please try again.";
+  };
+
+  // Get field-specific errors
+  const getFieldErrors = () => {
+    if (error && error.errors && typeof error.errors === 'object') {
+      return error.errors;
+    }
+    return {};
+  };
+
   return (
     <>
       <Form
         type="Login"
         user={user}
         onSubmit={handleLogin}
-        error={status === STATUSES.ERROR ? error : null}
+        error={status === STATUSES.ERROR ? getErrorMessage() : null}
+        fieldErrors={getFieldErrors()}
       />
     </>
   );

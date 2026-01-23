@@ -6,23 +6,39 @@ import { verifyOtp, reSend } from "../../http/verify-otp";
 import OTPNavbar from "./components/OTPNavbar";
 import OTPCard from "./components/OTPCard";
 
-/* ---------- STRICT ERROR FILTER ---------- */
-const getUserErrorMessage = (error) => {
-  const allowedMessages = [
-    "Invalid OTP",
-    "OTP expired",
-    "Too many attempts",
-    "OTP already used",
-    "Email not found"
-  ];
-
-  const backendMessage = error?.response?.data?.message;
-
-  if (allowedMessages.includes(backendMessage)) {
-    return backendMessage;
+/**
+ * Parse error response from OTP verification API
+ * Handles different error formats: validation errors, simple messages, etc.
+ */
+const parseOtpError = (error) => {
+  const response = error.response?.data;
+  
+  if (!response) {
+    return {
+      message: "Verification failed. Please try again.",
+      fieldError: null,
+    };
   }
 
-  return "Verification failed. Please try again.";
+  // Handle validation errors (400 with errors object)
+  // Example: { message: "Validation failed", errors: { otp: "OTP must be 6 characters long" } }
+  if (response.errors && typeof response.errors === 'object') {
+    const otpError = response.errors.otp;
+    return {
+      message: otpError || response.message || "Invalid OTP format",
+      fieldError: otpError,
+    };
+  }
+
+  // Handle specific error messages
+  // 400: "Invalid or expired OTP"
+  // 404: "User not found with email: ..."
+  const message = response.message || "Verification failed. Please try again.";
+  
+  return {
+    message,
+    fieldError: null,
+  };
 };
 
 export default function StepOTP() {
@@ -132,15 +148,15 @@ export default function StepOTP() {
     setError("");
 
     try {
-      const res = await verifyOtp(email, otpString);
-      const data = res.data;
+      await verifyOtp(email, otpString);
 
       // After successful OTP verification, redirect to login page
       localStorage.removeItem("pendingEmail");
       navigate("/login");
 
     } catch (err) {
-      setError(getUserErrorMessage(err));
+      const errorData = parseOtpError(err);
+      setError(errorData.message);
       triggerShake();
       setOtp(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
@@ -160,18 +176,14 @@ export default function StepOTP() {
     setOtpExpiryTimer(180); // Reset to 3 minutes
 
     try {
-      const res = await reSend(email);
-      const data = res.data;
-
-      if (!data || !data.message) {
-        throw { response: { data } };
-      }
+      await reSend(email);
 
       // Clear OTP inputs on resend
       setOtp(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
     } catch (err) {
-      setError(getUserErrorMessage(err));
+      const errorData = parseOtpError(err);
+      setError(errorData.message);
       setCanResend(true);
       setResendTimer(0);
     }

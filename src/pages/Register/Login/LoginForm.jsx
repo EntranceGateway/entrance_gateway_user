@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import LoginFormInput from "./LoginFormInput";
 import SocialLoginButtons from "./SocialLoginButtons";
 
-export default function LoginForm({ onSubmit, error }) {
+export default function LoginForm({ onSubmit, error, fieldErrors = {} }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -58,17 +58,22 @@ export default function LoginForm({ onSubmit, error }) {
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="space-y-5">
           {/* Email Input */}
-          <LoginFormInput
-            label="Email Address"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="name@example.com"
-            icon="mail"
-            required
-            autoComplete="email"
-          />
+          <div>
+            <LoginFormInput
+              label="Email Address"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="name@example.com"
+              icon="mail"
+              required
+              autoComplete="email"
+            />
+            {fieldErrors.email && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+            )}
+          </div>
 
           {/* Password Input */}
           <div>
@@ -106,6 +111,9 @@ export default function LoginForm({ onSubmit, error }) {
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue sm:text-sm transition-all"
               />
             </div>
+            {fieldErrors.password && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+            )}
           </div>
         </div>
 

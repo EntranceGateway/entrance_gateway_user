@@ -80,6 +80,35 @@ export const {
 
 export default authSlice.reducer;
 
+/**
+ * Parse error response from API
+ * Handles different error formats: validation errors, simple messages, etc.
+ */
+function parseErrorResponse(error) {
+  const response = error.response?.data;
+  
+  if (!response) {
+    return {
+      message: error.message || "An error occurred. Please try again.",
+      errors: null,
+    };
+  }
+
+  // Handle validation errors (400 with errors object)
+  if (response.errors && typeof response.errors === 'object') {
+    return {
+      message: response.message || "Validation failed",
+      errors: response.errors, // { email: "...", password: "..." }
+    };
+  }
+
+  // Handle simple message errors (401, 403, 404, 409)
+  return {
+    message: response.message || "An error occurred",
+    errors: null,
+  };
+}
+
 // Thunks
 export function addAuth(data) {
   return async function (dispatch) {
@@ -112,10 +141,7 @@ export function addAuth(data) {
     } catch (error) {
       console.error("API Error:", error);
 
-      const errorData =
-        error.response?.data || {
-          message: error.message || "Registration failed. Please try again.",
-        };
+      const errorData = parseErrorResponse(error);
 
       dispatch(setStatus(STATUSES.ERROR));
       dispatch(setError(errorData));
@@ -178,16 +204,13 @@ export function login(data) {
         return { success: false, error: errorData };
       }
     } catch (error) {
-      // Extract error message from API response or use fallback
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Login failed. Please try again.";
+      // Parse error response
+      const errorData = parseErrorResponse(error);
 
       dispatch(setStatus(STATUSES.ERROR));
-      dispatch(setError(errorMessage));
+      dispatch(setError(errorData));
 
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorData };
     }
   };
 }
