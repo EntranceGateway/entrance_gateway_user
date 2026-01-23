@@ -40,6 +40,9 @@ import TrainingDetail from "./pages/Training/TrainingDetail";
 import store from "../store/store";
 import { initializeAuth } from "../store/authSlice";
 
+// Component imports
+import ProtectedRoute from "./components/ProtectedRoute";
+
 // ────────────────────────────────────────────────
 // Constants
 // ────────────────────────────────────────────────
@@ -216,7 +219,14 @@ function AppRoutes() {
         ═══════════════════════════════════════════ */}
         <Route path="/notes" element={<NotesPage />} />
         <Route path="/notes/:course/:sem" element={<NotesGrid />} />
-        <Route path="/note/:id" element={<NoteDetails />} />
+        <Route 
+          path="/note/:id" 
+          element={
+            <ProtectedRoute>
+              <NoteDetails />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* ═══════════════════════════════════════════
             Courses Routes
@@ -247,7 +257,14 @@ function AppRoutes() {
             Old Questions Routes
         ═══════════════════════════════════════════ */}
         <Route path="/old-questions" element={<OldQuestionsPage />} />
-        <Route path="/old-questions/:id" element={<OldQuestionDetailPage />} />
+        <Route 
+          path="/old-questions/:id" 
+          element={
+            <ProtectedRoute>
+              <OldQuestionDetailPage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* ═══════════════════════════════════════════
             Contact Route

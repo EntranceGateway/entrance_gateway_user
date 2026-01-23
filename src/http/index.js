@@ -94,10 +94,10 @@ api.interceptors.response.use(
       // No refresh token available
       if (!refreshToken) {
         isRefreshing = false;
-        // Only redirect if not during initialization
+        // Only clear tokens if not during initialization
         if (!isInitializing) {
           clearTokens();
-          window.location.href = "/login";
+          // Don't redirect here - let ProtectedRoute handle it
         }
         return Promise.reject(error);
       }
@@ -128,10 +128,7 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         clearTokens();
         
-        // Only redirect if not during initialization
-        if (!isInitializing) {
-          window.location.href = "/login";
-        }
+        // Don't redirect here - let ProtectedRoute handle it
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

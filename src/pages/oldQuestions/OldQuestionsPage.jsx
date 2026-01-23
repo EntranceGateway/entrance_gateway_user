@@ -60,6 +60,8 @@ export default function OldQuestionsPage() {
       setTotalElements(response.totalElements || 0);
     } catch (err) {
       console.error("Failed to fetch questions:", err);
+      // If 401 error (authentication required), show empty state
+      // User can still browse the page and will be prompted to login when clicking a question
       setQuestions([]);
       setTotalPages(0);
       setTotalElements(0);

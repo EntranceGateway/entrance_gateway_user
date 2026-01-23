@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { login, setStatus, STATUSES } from "../../../store/authSlice";
 import Form from "./Login/Login";
 
@@ -10,6 +10,7 @@ const Login = () => {
     (state) => state.auth
   );
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   // Handle form submission
@@ -17,13 +18,15 @@ const Login = () => {
     dispatch(login(data));
   };
 
-  // Navigate to home on successful login
+  // Navigate to intended page or home on successful login
   useEffect(() => {
     if (status === STATUSES.SUCCESS && accessToken) {
-      navigate("/", { replace: true });
+      // Get the page user was trying to access before login
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
       dispatch(setStatus(STATUSES.IDLE)); // Reset to idle after navigation
     }
-  }, [status, accessToken, navigate, dispatch]);
+  }, [status, accessToken, navigate, dispatch, location]);
 
   // Format error for display
   const getErrorMessage = () => {

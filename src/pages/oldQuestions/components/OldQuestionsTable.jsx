@@ -37,9 +37,16 @@ export default function OldQuestionsTable({ questions, loading }) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-12 text-center">
-          <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">description</span>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No Questions Found</h3>
-          <p className="text-gray-500">Try adjusting your filters to find question papers.</p>
+          <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">lock</span>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Login Required</h3>
+          <p className="text-gray-500 mb-6">Please login to view and access old question papers</p>
+          <button
+            onClick={() => window.location.href = "/login"}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-gold hover:bg-yellow-500 text-brand-navy font-semibold rounded-lg transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined">login</span>
+            Login to Continue
+          </button>
         </div>
       </div>
     );

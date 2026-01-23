@@ -69,6 +69,8 @@ export default function NotesPage() {
       setTotalElements(response.data.totalElements || 0);
     } catch (err) {
       console.error("Failed to fetch notes", err);
+      // If 401 error (authentication required), show empty state
+      // User can still browse the page and will be prompted to login when clicking a note
       setNotes([]);
       setTotalPages(0);
       setTotalElements(0);
@@ -165,23 +167,31 @@ export default function NotesPage() {
               <div className="text-center py-20">
                 <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
                   <span className="material-symbols-outlined text-6xl text-gray-300">
-                    description
+                    {searchQuery ? "search_off" : "lock"}
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-700 mb-2">
-                  No notes found
+                  {searchQuery ? "No notes found" : "Login Required"}
                 </h3>
-                <p className="text-gray-500 mb-4">
+                <p className="text-gray-500 mb-6">
                   {searchQuery
                     ? `No results for "${searchQuery}"`
-                    : "Try adjusting your filters to find notes"}
+                    : "Please login to view and access study notes"}
                 </p>
-                {searchQuery && (
+                {searchQuery ? (
                   <button
                     onClick={() => setSearchQuery("")}
                     className="text-brand-blue hover:text-brand-navy font-medium"
                   >
                     Clear search
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => window.location.href = "/login"}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-gold hover:bg-yellow-500 text-brand-navy font-semibold rounded-lg transition-all shadow-sm"
+                  >
+                    <span className="material-symbols-outlined">login</span>
+                    Login to Continue
                   </button>
                 )}
               </div>

@@ -55,7 +55,7 @@ export default function OldQuestionDetailPage() {
         return;
       }
 
-      if (!id || !accessToken) {
+      if (!id) {
         setLoading(false);
         return;
       }
@@ -281,35 +281,6 @@ export default function OldQuestionDetailPage() {
             >
               <span className="material-symbols-outlined">arrow_back</span>
               Back to Old Questions
-            </button>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  // Auth Required State
-  if (!accessToken) {
-    return (
-      <DashboardLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-          <div className="text-center max-w-md">
-            <div className="w-20 h-20 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-6xl text-amber-600">
-                lock
-              </span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">
-              Login Required
-            </h2>
-            <p className="text-gray-500 mb-8">
-              Please log in to view this question paper.
-            </p>
-            <button
-              onClick={() => navigate("/login")}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-gold hover:bg-yellow-500 text-brand-navy font-semibold rounded-lg transition-all shadow-sm"
-            >
-              Login to Continue
             </button>
           </div>
         </div>
